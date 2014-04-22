@@ -2,8 +2,8 @@
 
 `RestModel` is a library for interacting with a REST API in Ember. It aims to
 remain as simple as possible, but the ultimate goal will be to gracefully
-handle issues like caching and deleted records without requiring methods like
-side-loaded or side-deleted data in API responses. It is mega-WIP.
+handle issues like caching, ranges, and deleted records without requiring
+methods like side-loaded or side-deleted data in API responses. It is mega-WIP.
 
 
 `RestModel` is built around URLs. If a model's URL is set to `/foos/:foo_id/bars`,
