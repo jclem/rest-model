@@ -1,0 +1,24 @@
+{
+  "name": "rest-model",
+  "main": "index.js",
+  "version": "0.1.0",
+  "authors": [
+    "Jonathan Clem <jonathan@jclem.net>"
+  ],
+  "description": "simple library for using REST APIs in ember",
+  "keywords": [
+    "ember",
+    "rest",
+    "persistence",
+    "ajax"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/jclem/rest-model.git",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
