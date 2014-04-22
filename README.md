@@ -71,7 +71,6 @@ bar.save();
 ## Testing
 
 ```sh
-$ bower install
 $ npm install
 $ npm test
 ```
