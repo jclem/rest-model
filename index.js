@@ -125,7 +125,7 @@ var RestModel = Ember.Object.extend({
    *    Bar.buildURL([1], 2); // '/foo/1/bars/2'
    */
   buildURL: function(params, primaryKey) {
-    path = Ember.String.fmt(this.url.replace(/:[^\/]+/, '%@'), params);
+    var path = Ember.String.fmt(this.url.replace(/:[^\/]+/, '%@'), params);
 
     if (!Ember.isBlank(primaryKey)) {
       path = [path, primaryKey].join('/');
