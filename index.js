@@ -71,7 +71,7 @@ var RestModel = Ember.Object.extend({
     return new Ember.RSVP.Promise(function(resolve, reject) {
       $.ajax({
         url        : options.url,
-        type       : options.method,
+        type       : options.method || 'GET',
         data       : options.data,
         dataType   : 'json',
         contentType: 'application/json'
