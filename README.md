@@ -67,3 +67,11 @@ Update `bar`:
 bar.set('name', 'Mr. Bar');
 bar.save();
 ```
+
+## Testing
+
+```sh
+$ bower install
+$ npm install
+$ npm test
+```
