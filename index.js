@@ -255,3 +255,7 @@ var RestModel = Ember.Object.extend({
    */
   primaryKey: 'id'
 });
+
+if (typeof require === 'function' && module) {
+  module.exports = RestModel;
+}
