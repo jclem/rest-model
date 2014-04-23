@@ -32,13 +32,13 @@ var RestModel = Ember.Object.extend({
   },
 
   /**
-   * Retrieve the parent keys for this object, useful for saving and updating
-   * the object. Assumes that for path /posts/:post_id/comments, there is an
-   * attribute `post_id` on the model.
+   * The parent keys for this object, useful for saving and updating the object.
+   * Assumes that for path /posts/:post_id/comments, there is an attribute
+   * `post_id` on the model. This is a computed property.
    *
-   * @method parentKeys
+   * @property parentKeys
+   * @type {Array}
    * @private
-   * @return {Array} an array of parent keys
    */
   parentKeys: function() {
     var self = this;
