@@ -38,11 +38,59 @@ describe('RestModel', function() {
     });
   });
 
+  describe('namespacing', function() {
+    beforeEach(function() {
+      Post.namespace = 'posts-api';
+    });
+
+    afterEach(function() {
+      Post.namespace = null;
+    })
+
+    it('applies a namespace when present', function() {
+      Post.find(1);
+      jQuery.ajax.args[0][0].url.should.eql('/posts-api/posts/1');
+    });
+  });
+
+  describe('#delete', function() {
+    it('deletes the given model', function() {
+      var model = Post.create({ id: 1 });
+      model.delete();
+      jQuery.ajax.args[0][0].type.should.eql('DELETE');
+      jQuery.ajax.args[0][0].url.should.eql('/posts/1');
+    });
+  });
+
+  describe('#fetch', function() {
+    it('fetches the given model', function() {
+      var model = Post.create({ id: 1 });
+      model.fetch();
+      jQuery.ajax.args[0][0].url.should.eql('/posts/1');
+    });
+  });
+
+  describe('#isPersisted', function() {
+    describe('when `created_at` is present', function() {
+      it('is true', function() {
+        var model = Post.create({ id: 1, created_at: '2013/01/01' });
+        model.get('isPersisted').should.eql(true);
+      });
+    });
+
+    describe('when `created_at` is not present', function() {
+      it('is false', function() {
+        var model = Post.create({ id: 1 });
+        model.get('isPersisted').should.eql(false);
+      });
+    });
+  });
+
   describe('#save', function() {
     describe('when there are no parents', function() {
-      describe('when the model has a primary key', function() {
+      describe('when the model has been persisted', function() {
         beforeEach(function() {
-          this.model   = Post.create({ id: 1 });
+          this.model   = Post.create({ id: 1, created_at: '2013/01/01' });
           this.request = this.model.save.bind(this.model);
         });
 
@@ -60,7 +108,7 @@ describe('RestModel', function() {
         shared.behavesLikeAFailableRequest();
       });
 
-      describe('when the model has no primary key', function() {
+      describe('when the model has not been persisted', function() {
         beforeEach(function() {
           this.model   = Post.create();
           this.request = this.model.save.bind(this.model);
@@ -82,9 +130,10 @@ describe('RestModel', function() {
     });
 
     describe('when there are parents', function() {
-      describe('when the model has a primary key', function() {
+      describe('when the model has been persisted', function() {
         beforeEach(function() {
-          this.model   = Comment.create({ post_id: 2, id: 1 });
+          var post     = Post.create({ id: 2 });
+          this.model   = Comment.create({ parents: [post], id: 1, created_at: '2013/01/01' });
           this.request = this.model.save.bind(this.model);
         });
 
@@ -102,9 +151,10 @@ describe('RestModel', function() {
         shared.behavesLikeAFailableRequest();
       });
 
-      describe('when the model has no primary key', function() {
+      describe('when the model has not been persisted', function() {
         beforeEach(function() {
-          this.model   = Comment.create({ post_id: 2 });
+          var post     = Post.create({ id: 2 });
+          this.model   = Comment.create({ parents: [post] });
           this.request = this.model.save.bind(this.model);
         });
 
@@ -144,8 +194,10 @@ describe('RestModel', function() {
 
     describe('when there are parents', function() {
       beforeEach(function() {
+        var post     = Post.create({ id: 12345 });
+        this.parents = [post];
+
         this.request = function() {
-          var post = Post.create({ id: 12345 });
           return Comment.all(post);
         }
 
@@ -157,6 +209,8 @@ describe('RestModel', function() {
         jQuery.ajax.args[0][0].url.should.eql('/posts/12345/comments');
       });
 
+
+      shared.behavesLikeAParentsRequest();
       shared.behavesLikeAGETRequest();
       shared.behavesLikeAJSONRequest();
       shared.behavesLikeAnArrayRequest();
@@ -187,8 +241,11 @@ describe('RestModel', function() {
 
     describe('when there are parents', function() {
       beforeEach(function() {
+        var post     = Post.create({ id: 12345 });
+        this.parents = [post];
+        this.resolve = { id: 2 };
+
         this.request = function() {
-          var post = Post.create({ id: 12345 });
           return Comment.find(post, 2);
         }
 
@@ -200,6 +257,7 @@ describe('RestModel', function() {
         jQuery.ajax.args[0][0].url.should.eql('/posts/12345/comments/2');
       });
 
+      shared.behavesLikeAParentsRequest();
       shared.behavesLikeAGETRequest();
       shared.behavesLikeAJSONRequest();
       shared.behavesLikeAnObjectRequest();

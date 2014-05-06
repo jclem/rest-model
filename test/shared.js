@@ -23,6 +23,23 @@ exports.behavesLikeAnArrayRequest = function() {
   });
 };
 
+exports.behavesLikeAParentsRequest = function() {
+  it('adds the parents to each model', function(done) {
+    var self = this;
+    this.resolve || (this.resolve = [{ content: 'post content' }]);
+
+    this.request().then(function(models) {
+      if ($.isArray(models)) {
+        models[0].get('parents').should.eql(self.parents);
+      } else {
+        models.get('parents').should.eql(self.parents);
+      }
+
+      done();
+    });
+  });
+};
+
 exports.behavesLikeAnObjectRequest = function() {
   it('resolves with a single model', function(done) {
     var self = this;
@@ -39,7 +56,8 @@ exports.behavesLikeAnObjectRequest = function() {
 exports.behavesLikeAFailableRequest = function() {
   it('rejects with the jqXHR object', function(done) {
     var self = this;
-    this.reject = 'failed jqXHR';
+    this.resolve = null;
+    this.reject  = { responseJSON: { message: 'failed jqXHR' } };
 
     this.request().then(null, function(jqXHR) {
       jqXHR.should.eql(self.reject);
