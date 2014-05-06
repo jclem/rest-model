@@ -7,11 +7,6 @@ remain as simple as possible, but the ultimate goal will be to gracefully
 handle issues like caching, ranges, and deleted records without requiring
 methods like side-loaded or side-deleted data in API responses. It is mega-WIP.
 
-
-`RestModel` is built around URLs. If a model's URL is set to `/foos/:foo_id/bars`,
-it expects that instances of the `Bar` model have a `foo_id` attribute, which is
-the primary key to fit into that part of the URL.
-
 ## Examples
 
 Given:
@@ -59,7 +54,8 @@ Bar.find(foo, 1);
 Create a `Bar`, which belongs to `Foo` #1:
 
 ```javascript
-var bar = Bar.create({ foo_id: 1, name: 'Ms. Bar' });
+var foo = Foo.create({ id: 1 });
+var bar = Bar.create({ parents: [foo], name: 'Ms. Bar' });
 bar.save();
 ```
 
