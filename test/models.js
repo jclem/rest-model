@@ -2,7 +2,9 @@
 
 var RestModel = require('..');
 
-exports.Post = RestModel.extend().reopenClass({
+exports.Post = RestModel.extend({
+  attrs: ['id', 'created_at', 'content', 'foo', 'name']
+}).reopenClass({
   url: '/posts'
 });
 

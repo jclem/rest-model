@@ -53,6 +53,25 @@ describe('RestModel', function() {
     });
   });
 
+  describe('originalProperties', function() {
+    it('sets originalProperties on init', function() {
+      var post = Post.create({ name: 'original name' });
+      post.set('name', 'new name');
+      post.get('originalProperties').get('name').should.eql('original name');
+    });
+
+    it('creates a deep copy', function() {
+      var post = Post.create({ foo: { bar: ['baz'] } });
+      post.get('foo').bar.push('qux');
+      post.get('originalProperties').get('foo').bar.should.eql(['baz']);
+    });
+
+    it('does not include non-attr properties', function() {
+      var post = Post.create({ notAttr: 'foo', name: 'original name' });
+      should(post.get('originalProperties').get('notAttr')).eql(undefined);
+    });
+  });
+
   describe('#delete', function() {
     it('deletes the given model', function() {
       var model = Post.create({ id: 1 });
@@ -67,6 +86,27 @@ describe('RestModel', function() {
       var model = Post.create({ id: 1 });
       model.fetch();
       jQuery.ajax.args[0][0].url.should.eql('/posts/1');
+    });
+  });
+
+  describe('#isDirty', function() {
+    var post;
+
+    beforeEach(function() {
+      post = Post.create({ name: 'name' });
+    });
+
+    describe('when attributes are changed', function() {
+      it('is true', function() {
+        post.set('name', 'new name');
+        post.get('isDirty').should.eql(true);
+      });
+    });
+
+    describe('when attributes are not changed', function() {
+      it('is false', function() {
+        post.get('isDirty').should.eql(false);
+      });
     });
   });
 
@@ -86,7 +126,26 @@ describe('RestModel', function() {
     });
   });
 
+  describe('#revert', function() {
+    it('reverts the object', function() {
+      var post = Post.create({ foo: { bar: ['baz'] } });
+      post.get('foo').bar.push('qux');
+      post.revert().get('foo').bar.should.eql(['baz']);
+    });
+  });
+
   describe('#save', function() {
+    it('resets original properties', function(done) {
+      var self = this;
+      this.model   = Post.create({ id: 1, created_at: '2013/01/01' });
+      this.resolve = { content: 'foo' };
+      this.request = this.model.save.bind(this.model);
+      this.request().then(function(m) {
+        self.model.get('originalProperties').get('content').should.eql('foo');
+        done()
+      });
+    });
+
     describe('when there are no parents', function() {
       describe('when the model has been persisted', function() {
         beforeEach(function() {

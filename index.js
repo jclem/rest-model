@@ -3,6 +3,58 @@
  */
 var RestModel = Ember.Object.extend({
   /**
+   * The attributes that are returned via the API for this model. This is
+   * necessary to distinguish between things like `created_at` and non-API
+   * attributes like `isSaving`.
+   *
+   * @property attrs
+   * @type Array
+   */
+  attrs: function() {
+    return [];
+  }.property(),
+
+  /**
+   * Called when the record is initialized, setting its `originalProperties` to
+   * a copy of its original properties.
+   *
+   * @method init
+   * @private
+   */
+  init: function() {
+    var self = this;
+
+    this.setOriginalProperties();
+
+    /**
+     * Tracks whether or not any attributes on the model differ from their values
+     * as of when the model was created, fetched, or last saved (whichever is
+     * most recent).
+     *
+     * @property isDirty
+     * @type Boolean
+     */
+    var isDirty = Ember.computed.apply(Ember, this.get('attrs').concat(function(key, value) {
+      var attrs              = self.get('attrs');
+      var originalProperties = self.get('originalProperties');
+      var i, key, value;
+
+      for (i = 0; i < attrs.length; i++) {
+        key   = attrs[i];
+        value = self.get(key);
+
+        if (value !== originalProperties.get(key)) {
+          return true;
+        }
+      }
+
+      return false;
+    }));
+
+    Ember.defineProperty(this, 'isDirty', isDirty);
+  },
+
+  /**
    * Delete this record.
    *
    * @method delete
@@ -104,6 +156,15 @@ var RestModel = Ember.Object.extend({
   },
 
   /**
+   * Reverts an object to its original properties.
+   *
+   * @method revert
+   */
+  revert: function() {
+    return this.setProperties(this.get('originalProperties'));
+  },
+
+  /**
    * Save this model, either via PATCH or POST. If the model has a non-blank
    * primary key, PATCH. Otherwise, POST.
    *
@@ -117,6 +178,7 @@ var RestModel = Ember.Object.extend({
    *     });
    */
   save: function() {
+    var self = this;
     var method;
 
     if (this.get('isPersisted')) {
@@ -125,7 +187,28 @@ var RestModel = Ember.Object.extend({
       method = 'post';
     }
 
-    return this.submit(method);
+    return this.submit(method).then(function(n) {
+      return self.setOriginalProperties();
+    });
+  },
+
+  /**
+   * Sets the `originalProperties` to the current properties on the object.
+   *
+   * @method setOriginalProperties
+   * @private
+   */
+  setOriginalProperties: function() {
+    var self  = this;
+    var attrs = this.get('attrs');
+
+    this.set('originalProperties', Ember.keys(this).reduce(function(obj, key) {
+      if (attrs.indexOf(key) === -1) {
+        return obj;
+      } else {
+        return obj.set(key, Ember.copy(self[key], true));
+      }
+    }, Ember.Object.create()));
   },
 
   /**
