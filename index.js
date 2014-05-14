@@ -37,7 +37,7 @@ var RestModel = Ember.Object.extend({
     var isDirty = Ember.computed.apply(Ember, this.get('attrs').concat(function(key, value) {
       var attrs              = self.get('attrs');
       var originalProperties = self.get('originalProperties');
-      var i, key, value;
+      var i;
 
       for (i = 0; i < attrs.length; i++) {
         key   = attrs[i];
