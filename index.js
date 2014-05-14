@@ -270,7 +270,7 @@ var RestModel = Ember.Object.extend({
    * @method ajax
    * @static
    * @private
-   * @param {Object} options a hash of options defining the request
+   * @param {Object} options options defining the request
    * @param {String} options.url the url to make the request to
    * @param {String} options.method the HTTP verb to use
    * @param {String} options.data the JSON-string request data to send
@@ -318,7 +318,9 @@ var RestModel = Ember.Object.extend({
    * @method all
    * @static
    * @param {Array} [parents] the parent IDs or objects to build the path with
-   * @param {Hash} [options] options that will be passed to `getBeforeSend`
+   * @param {Object} [options] options that will be passed to `ajax`
+   * @param {String} options.withURL a url template (e.g. `/foo/:bar`) to
+   *   construct the URL for this request from, instead of the default URL.
    * @return {Ember.RSVP.Promise} a promise to be resolved with the models
    * @example
    *     // With no parent
@@ -330,7 +332,7 @@ var RestModel = Ember.Object.extend({
    */
   all: function(parents, options) {
     var params = this.extractPrimaryKeys(parents);
-    var url    = this.buildURL(params);
+    var url    = this.buildURL(params, null, options);
     options    = $.extend({ url: url, parents: parents }, options);
     return this.ajax(options);
   },
@@ -348,8 +350,18 @@ var RestModel = Ember.Object.extend({
    *    var Bar = RestModel.extend().reopenClass({ url: '/foo/:foo_id/bars' });
    *    Bar.buildURL([1], 2); // '/foo/1/bars/2'
    */
-  buildURL: function(params, primaryKey) {
-    var path      = Ember.String.fmt(this.url.replace(/:[^\/]+/, '%@'), params);
+  buildURL: function(params, primaryKey, options) {
+    var url;
+
+    options = options || {};
+
+    if (options.withURL) {
+      url = options.withURL;
+    } else {
+      url = this.url;
+    }
+
+    var path      = Ember.String.fmt(url.replace(/:[^\/]+/, '%@'), params);
     var namespace = this.namespace || RestModel.namespace;
     namespace     = namespace ? '/' + namespace : '';
 

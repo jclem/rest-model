@@ -275,6 +275,17 @@ describe('RestModel', function() {
       shared.behavesLikeAnArrayRequest();
       shared.behavesLikeAFailableRequest();
     });
+
+    describe('when given a specific URL', function() {
+      beforeEach(function() {
+        var post = Post.create({ id: 12345 });
+        Comment.all(post, { withURL: '/foo/:bar/baz' });
+      });
+
+      it('uses the given URL', function() {
+        jQuery.ajax.args[0][0].url.should.eql('/foo/12345/baz');
+      });
+    });
   });
 
   describe('::find', function() {
