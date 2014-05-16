@@ -169,6 +169,9 @@ var RestModel = Ember.Object.extend({
    * primary key, PATCH. Otherwise, POST.
    *
    * @method save
+   * @param {Object} [options] options that will be passed to `ajax`
+   * @param {String} options.withURL a url template (e.g. `/foo/:bar`) to
+   *   make the request with
    * @return {Ember.RSVP.Promise} a promise to be resolved with the saved model
    * @example
    *     Foo.create({ name: 'bar' }).save().then(function() {
@@ -177,7 +180,7 @@ var RestModel = Ember.Object.extend({
    *       // (failed)
    *     });
    */
-  save: function() {
+  save: function(options) {
     var self = this;
     var method;
 
@@ -187,7 +190,7 @@ var RestModel = Ember.Object.extend({
       method = 'post';
     }
 
-    return this.submit(method).then(function(n) {
+    return this.submit(method, options).then(function(n) {
       return self.setOriginalProperties();
     });
   },
@@ -233,9 +236,12 @@ var RestModel = Ember.Object.extend({
    * @method submit
    * @private
    * @param {String} method the method to be used (e.g. `delete`, `patch`)
+   * @param {Object} [options] options that will be passed to `ajax`
+   * @param {String} options.withURL a url template (e.g. `/foo/:bar`) to
+   *   make the request with
    * @return {Ember.RSVP.Promise} a promise to be resolved with the model
    */
-  submit: function(method) {
+  submit: function(method, options) {
     var parentKeys = this.getParentKeys();
     var self       = this;
 
@@ -246,7 +252,7 @@ var RestModel = Ember.Object.extend({
     }
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
-      self.constructor[method](parentKeys, self).then(function(data) {
+      self.constructor[method](parentKeys, self, options).then(function(data) {
         self.get('errors').setObjects([]);
         self.setProperties(data);
         resolve(self);
@@ -522,11 +528,14 @@ var RestModel = Ember.Object.extend({
    * @private
    * @param {Array} parents the parents of this record
    * @param {RestModel} model the model to update
+   * @param {Object} [options] options that will be passed to `ajax`
+   * @param {String} options.withURL a url template (e.g. `/foo/:bar`) to
+   *   make the request with
    * @return {Ember.RSVP.Promise} a promise to be resolved with the model
    */
-  patch: function(parents, model) {
+  patch: function(parents, model, options) {
     var params = this.extractPrimaryKeys(parents);
-    var url    = this.buildURL(params, model.getPrimaryKey());
+    var url    = this.buildURL(params, model.getPrimaryKey(), options);
     var data   = model.serialize('patch');
     return this.ajax({ url: url, method: 'PATCH', data: data });
   },
@@ -539,11 +548,14 @@ var RestModel = Ember.Object.extend({
    * @private
    * @param {Array} parents the parents of this record
    * @param {RestModel} model the model to create
+   * @param {Object} [options] options that will be passed to `ajax`
+   * @param {String} options.withURL a url template (e.g. `/foo/:bar`) to
+   *   make the request with
    * @return {Ember.RSVP.Promise} a promise to be resolved with the model
    */
-  post: function(parents, model) {
+  post: function(parents, model, options) {
     var params = this.extractPrimaryKeys(parents);
-    var url    = this.buildURL(params);
+    var url    = this.buildURL(params, null, options);
     var data   = model.serialize('post');
     return this.ajax({ url: url, method: 'POST', data: data });
   },

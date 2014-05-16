@@ -146,6 +146,17 @@ describe('RestModel', function() {
       });
     });
 
+    describe('when given a specific URL', function() {
+      beforeEach(function() {
+        var post = Post.create({ id: 12345, created_at: 'foo' });
+        post.save({ withURL: '/foo/baz' });
+      });
+
+      it('uses the given URL', function() {
+        jQuery.ajax.args[0][0].url.should.eql('/foo/baz/12345');
+      });
+    });
+
     describe('when there are no parents', function() {
       describe('when the model has been persisted', function() {
         beforeEach(function() {
