@@ -8,6 +8,6 @@
   },
   "scripts": {
     "postinstall": "bower install",
-    "test": "mocha test/test.js -t 10"
+    "test": "mocha test/test.js -t 50"
   }
 }
