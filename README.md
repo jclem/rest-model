@@ -70,5 +70,6 @@ bar.save();
 
 ```sh
 $ npm install
+$ bower install
 $ npm test
 ```
