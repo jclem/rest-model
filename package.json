@@ -1,7 +1,7 @@
 {
   "devDependencies": {
     "benv": "^0.1.5",
-    "mocha": "^1.18.2",
+    "mocha": "~1.18.2",
     "should": "^3.3.1",
     "sinon": "^1.9.1",
     "bower": "^1.3.2"
