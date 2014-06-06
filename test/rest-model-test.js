@@ -2,32 +2,14 @@
 
 require('./test-helper');
 
-var should   = require('should');
-var sinon    = require('sinon');
-var shared   = require('./shared');
+var should = require('should');
+var shared = require('./shared');
 var Comment, Post;
 
 describe('RestModel', function() {
   before(function() {
     Post    = require('./models').Post;
     Comment = require('./models').Comment;
-  });
-
-  beforeEach(function() {
-    var self = this;
-
-    this.resolve = null;
-    this.reject  = null;
-
-    jQuery.ajax = sinon.stub().returns({
-      then: function(resolve, reject) {
-        if (self.resolve) {
-          return resolve(self.resolve);
-        } else if (self.reject) {
-          return reject(self.reject);
-        }
-      }
-    });
   });
 
   describe('namespacing', function() {

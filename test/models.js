@@ -3,7 +3,8 @@
 var RestModel = require('..');
 
 exports.Post = RestModel.extend({
-  attrs: ['id', 'created_at', 'content', 'foo', 'name']
+  attrs: ['id', 'created_at', 'content', 'foo', 'name'],
+  serializedProperties: ['id', 'created_at', 'content', 'foo', 'name']
 }).reopenClass({
   url: '/posts',
 

@@ -305,7 +305,7 @@ var RestModel = Ember.Object.extend({
 
       if (options.cache && (cachedValue = cache.getModels(self, cacheKey))) {
         processedCache = self.processResponse(cachedValue, options);
-        Ember.run(null, resolve, processedCache);
+        resolve(processedCache);
       }
 
       $.ajax({
@@ -318,20 +318,18 @@ var RestModel = Ember.Object.extend({
       }).then(function(data, responseText, jqXHR) {
         var processedResponse = self.processResponse(data, options);
 
-        if (options.cache && method === 'GET') {
+        if (options.cache && method === 'GET' && data) {
           cache.update(self, cacheKey, data);
         }
 
         if (processedCache) {
-          Ember.run(null, function() {
-            self.updateCachedResponse(processedCache, processedResponse);
-          });
+          self.updateCachedResponse(processedCache, processedResponse);
         } else {
-          Ember.run(null, resolve, processedResponse);
+          resolve(processedResponse);
         }
       }, function(jqXHR) {
         delete jqXHR.then;
-        Ember.run(null, reject, jqXHR);
+        reject(jqXHR);
       });
     });
   },
@@ -713,7 +711,7 @@ exports.set = function(key, value) {
  * an array (or single instance of) the models for a given cache key.
  *
  * @method getModels
- * @param {Function} klass a {{#crossLink "RestModel"}}RestModel{{/crossLink}} 
+ * @param {Function} klass a {{#crossLink "RestModel"}}RestModel{{/crossLink}}
  *   to fetch records for
  * @param {String} cacheKey the cache key for an ID or array of IDs for the
  *   given class
@@ -752,7 +750,7 @@ exports.getModels = function(klass, cacheKey) {
  *   2. Add any new records to the class's primary cache store.
  *
  * @method update
- * @param {Function} klass a {{#crossLink "RestModel"}}RestModel{{/crossLink}} 
+ * @param {Function} klass a {{#crossLink "RestModel"}}RestModel{{/crossLink}}
  *   to update cached records for
  * @param {String} cacheKey the cache key to place the given records' primary
  *   keys in
@@ -785,7 +783,7 @@ exports.update = function(klass, cacheKey, data) {
  *
  * @method updateClassStore
  * @private
- * @param {Function} klass a {{#crossLink "RestModel"}}RestModel{{/crossLink}} 
+ * @param {Function} klass a {{#crossLink "RestModel"}}RestModel{{/crossLink}}
  *   to add cached records for
  * @param {Object,Array.Object} data an object or array of objects to add to
  *   the class's primary cache store

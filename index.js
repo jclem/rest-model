@@ -304,7 +304,7 @@ var RestModel = Ember.Object.extend({
 
       if (options.cache && (cachedValue = cache.getModels(self, cacheKey))) {
         processedCache = self.processResponse(cachedValue, options);
-        Ember.run(null, resolve, processedCache);
+        resolve(processedCache);
       }
 
       $.ajax({
@@ -317,20 +317,18 @@ var RestModel = Ember.Object.extend({
       }).then(function(data, responseText, jqXHR) {
         var processedResponse = self.processResponse(data, options);
 
-        if (options.cache && method === 'GET') {
+        if (options.cache && method === 'GET' && data) {
           cache.update(self, cacheKey, data);
         }
 
         if (processedCache) {
-          Ember.run(null, function() {
-            self.updateCachedResponse(processedCache, processedResponse);
-          });
+          self.updateCachedResponse(processedCache, processedResponse);
         } else {
-          Ember.run(null, resolve, processedResponse);
+          resolve(processedResponse);
         }
       }, function(jqXHR) {
         delete jqXHR.then;
-        Ember.run(null, reject, jqXHR);
+        reject(jqXHR);
       });
     });
   },

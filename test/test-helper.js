@@ -1,6 +1,7 @@
 'use strict';
 
 var benv  = require('benv');
+var sinon = require('sinon');
 var cache = {};
 
 before(function(done) {
@@ -21,6 +22,32 @@ before(function(done) {
     };
 
     done();
+  });
+});
+
+beforeEach(function() {
+  var self = this;
+
+  this.resolve = null;
+  this.reject  = null;
+  this.afterRequest = function() {};
+
+  jQuery.ajax = sinon.stub().returns({
+    then: function(resolve, reject) {
+      if (self.resolve) {
+        Ember.run.later(function() {
+          resolve(self.resolve);
+          self.afterRequest();
+        });
+      } else if (self.reject) {
+        Ember.run.later(function() {
+          reject(self.reject);
+          self.afterRequest();
+        });
+      } else {
+        resolve(null);
+      }
+    }
   });
 });
 
