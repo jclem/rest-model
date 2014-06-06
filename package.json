@@ -1,12 +1,47 @@
 {
   "devDependencies": {
     "benv": "^0.1.5",
+    "bower": "^1.3.2",
+    "gulp": "^3.7.0",
+    "gulp-browserify": "^0.5.0",
+    "gulp-mocha": "^0.4.1",
+    "gulp-rename": "^1.2.0",
+    "gulp-uglifyjs": "^0.3.0",
     "mocha": "~1.18.2",
     "should": "^3.3.1",
-    "sinon": "^1.9.1",
-    "bower": "^1.3.2"
+    "sinon": "^1.9.1"
   },
   "scripts": {
-    "test": "mocha test/test.js -t 50"
+    "test": "mocha test/**/*-test.js -R nyan -t 50"
+  },
+  "jshintConfig": {
+    "eqeqeq": true,
+    "forin": true,
+    "globalstrict": true,
+    "immed": true,
+    "indent": 2,
+    "latedef": "nofunc",
+    "newcap": true,
+    "noarg": true,
+    "quotmark": "single",
+    "strict": true,
+    "trailing": true,
+    "undef": true,
+    "unused": true,
+    "globals": {
+      "$": false,
+      "Ember": false,
+      "jQuery": false,
+      "afterEach": false,
+      "before": false,
+      "beforeEach": false,
+      "describe": false,
+      "exports": false,
+      "global": false,
+      "it": false,
+      "localStorage": false,
+      "module": false,
+      "require": false
+    }
   }
 }

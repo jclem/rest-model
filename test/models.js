@@ -3,11 +3,20 @@
 var RestModel = require('..');
 
 exports.Post = RestModel.extend({
-  attrs: ['id', 'created_at', 'content', 'foo', 'name']
+  attrs: ['id', 'created_at', 'content', 'foo', 'name'],
+  serializedProperties: ['id', 'created_at', 'content', 'foo', 'name']
 }).reopenClass({
-  url: '/posts'
+  url: '/posts',
+
+  toString: function() {
+    return 'Post';
+  }
 });
 
 exports.Comment = RestModel.extend().reopenClass({
-  url: '/posts/:post_id/comments'
+  url: '/posts/:post_id/comments',
+
+  toString: function() {
+    return 'Comment';
+  }
 });
