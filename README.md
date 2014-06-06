@@ -7,6 +7,13 @@ remain as simple as possible, but the ultimate goal will be to gracefully
 handle issues like caching, ranges, and deleted records without requiring
 methods like side-loaded or side-deleted data in API responses. It is mega-WIP.
 
+## Building
+
+```sh
+npm install -g gulp
+gulp
+```
+
 ## Examples
 
 Given:

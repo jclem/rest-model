@@ -1,40 +1,32 @@
 'use strict';
 
-var benv     = require('benv');
+require('./test-helper');
+
 var should   = require('should');
 var sinon    = require('sinon');
 var shared   = require('./shared');
 var Comment, Post;
 
 describe('RestModel', function() {
-  before(function(done) {
-    benv.setup(function() {
-      global.jQuery     = require('../bower_components/jquery/dist/jquery.min.js');
-      global.$          = jQuery;
-      global.Handlebars = benv.require('../bower_components/handlebars/handlebars.min.js', 'Handlebars')
-      global.Ember      = benv.require('../bower_components/ember/ember.min.js', 'Ember');
+  before(function() {
+    Post    = require('./models').Post;
+    Comment = require('./models').Comment;
+  });
 
-      Post    = require('./models').Post;
-      Comment = require('./models').Comment;
+  beforeEach(function() {
+    var self = this;
 
-      done();
-    });
+    this.resolve = null;
+    this.reject  = null;
 
-    beforeEach(function() {
-      var self = this;
-
-      this.resolve = null;
-      this.reject  = null;
-
-      jQuery.ajax = sinon.stub().returns({
-        then: function(resolve, reject) {
-          if (self.resolve) {
-            return resolve(self.resolve);
-          } else if (self.reject) {
-            return reject(self.reject);
-          }
+    jQuery.ajax = sinon.stub().returns({
+      then: function(resolve, reject) {
+        if (self.resolve) {
+          return resolve(self.resolve);
+        } else if (self.reject) {
+          return reject(self.reject);
         }
-      });
+      }
     });
   });
 
@@ -45,7 +37,7 @@ describe('RestModel', function() {
 
     afterEach(function() {
       Post.namespace = null;
-    })
+    });
 
     it('applies a namespace when present', function() {
       Post.find(1);
@@ -140,9 +132,9 @@ describe('RestModel', function() {
       this.model   = Post.create({ id: 1, created_at: '2013/01/01' });
       this.resolve = { content: 'foo' };
       this.request = this.model.save.bind(this.model);
-      this.request().then(function(m) {
+      this.request().then(function() {
         self.model.get('originalProperties').get('content').should.eql('foo');
-        done()
+        done();
       });
     });
 
@@ -269,7 +261,7 @@ describe('RestModel', function() {
 
         this.request = function() {
           return Comment.all(post);
-        }
+        };
 
         this.klass = Comment;
       });
@@ -304,7 +296,7 @@ describe('RestModel', function() {
       beforeEach(function() {
         this.request = function() {
           return Post.find(1);
-        }
+        };
 
         this.klass = Post;
       });
@@ -328,7 +320,7 @@ describe('RestModel', function() {
 
         this.request = function() {
           return Comment.find(post, 2);
-        }
+        };
 
         this.klass = Comment;
       });

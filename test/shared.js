@@ -1,3 +1,5 @@
+'use strict';
+
 exports.behavesLikeAJSONRequest = function() {
   it('sends JSON dataType', function() {
     this.request();
@@ -26,7 +28,7 @@ exports.behavesLikeAnArrayRequest = function() {
 exports.behavesLikeAParentsRequest = function() {
   it('adds the parents to each model', function(done) {
     var self = this;
-    this.resolve || (this.resolve = [{ content: 'post content' }]);
+    this.resolve = this.resolve || [{ content: 'post content' }];
 
     this.request().then(function(models) {
       if ($.isArray(models)) {
@@ -89,6 +91,6 @@ exports.behavesLikeASaveRequest = function() {
     this.model.save().then(function() {
       self.model.get('content').should.eql(newContent);
       done();
-    })
+    });
   });
 };
