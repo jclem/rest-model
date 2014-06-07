@@ -1,7 +1,7 @@
 {
   "name": "rest-model",
-  "main": "index.js",
-  "version": "1.0.0",
+  "main": "dist/rest-model.js",
+  "version": "1.0.1",
   "authors": [
     "Jonathan Clem <jonathan@jclem.net>"
   ],
