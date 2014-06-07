@@ -11,6 +11,18 @@ var utils = require('./lib/utils');
  */
 var RestModel = Ember.Object.extend({
   /**
+   * Called when an API request returns with a non-successful status code. This
+   * no-op function can be used to set errors on the record.
+   *
+   * @method assignErrors
+   * @param {jQuery XMLHttpRequest} jqXHR the jQuery XMLHttpRequest option that
+   *   represents the request and respone
+   */
+  assignErrors: function(jqXHR) {
+    // no-op
+  },
+
+  /**
    * The attributes that are returned via the API for this model. This is
    * necessary to distinguish between things like `created_at` and non-API
    * attributes like `isSaving`.
@@ -263,8 +275,7 @@ var RestModel = Ember.Object.extend({
         self.setProperties(data);
         resolve(self);
       }, function(jqXHR) {
-        var responseError = jqXHR.responseJSON;
-        self.get('errors').setObjects([responseError.message]);
+        self.assignErrors(jqXHR);
         reject(jqXHR);
       }).finally(function() {
         if (method === 'delete') {
