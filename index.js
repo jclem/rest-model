@@ -7,7 +7,25 @@ var cache = require('./lib/cache');
 var utils = require('./lib/utils');
 
 /**
+ * RestModel provides a way to intereact with an API in an Ember app.
+ *
+ *     var App = RestModel.extend().reopenClass({
+ *       url: '/apps'
+ *     });
+ *
+ *     App.all().then(function(apps) { // GET "/apps"
+ *       // `apps` is an array of App
+ *     }):
+ *
+ *     App.find(1).then(function(app) { // GET "/apps/1"
+ *       // `app` is the App with ID "1"
+ *     });
+ *
  * @class RestModel
+ * @extends Ember.Object
+ * @constructor
+ * @param {Object} attribtues the attributes set as the original properties on
+ *   this instance
  */
 var RestModel = Ember.Object.extend({
   /**
@@ -78,6 +96,7 @@ var RestModel = Ember.Object.extend({
    * Delete this record.
    *
    * @method delete
+   * @async
    * @return {Ember.RSVP.Promise} a promise resolved with `this`, a
    *   {{#crossLink "RestModel"}}RestModel{{/crossLink}}
    */
@@ -99,6 +118,7 @@ var RestModel = Ember.Object.extend({
    * Fetch the current model
    *
    * @method fetch
+   * @async
    * @return {Ember.RSVP.Promise} a promise resolved with `this`, a
    *   {{#crossLink "RestModel"}}RestModel{{/crossLink}}
    */
@@ -192,6 +212,7 @@ var RestModel = Ember.Object.extend({
    * primary key, PATCH. Otherwise, POST.
    *
    * @method save
+   * @async
    * @param {Object} [options] options that will be passed to `ajax`
    * @param {String} options.withURL a url template (e.g. `/foo/:bar`) to
    *   make the request with
@@ -258,6 +279,7 @@ var RestModel = Ember.Object.extend({
    * `isSaving` or `isDeleting` attribute.
    *
    * @method submit
+   * @async
    * @private
    * @param {String} method the method to be used (e.g. `delete`, `patch`)
    * @param {Object} [options] options that will be passed to `ajax`
@@ -298,6 +320,7 @@ var RestModel = Ember.Object.extend({
    * Make an AJAX request with the given options.
    *
    * @method ajax
+   * @async
    * @static
    * @private
    * @param {Object} options options defining the request
@@ -356,6 +379,7 @@ var RestModel = Ember.Object.extend({
    * Fetch all records from the base URL for this class.
    *
    * @method all
+   * @async
    * @static
    * @param {Array} [parents] the parent IDs or objects to build the path with
    * @param {Object} [options] options that will be passed to `ajax`
@@ -417,6 +441,7 @@ var RestModel = Ember.Object.extend({
    * Delete a model
    *
    * @method delete
+   * @async
    * @static
    * @private
    * @param {Array} parents the parents of this record
@@ -485,6 +510,7 @@ var RestModel = Ember.Object.extend({
    * argument can be in the first position for convenience.
    *
    * @method find
+   * @async
    * @static
    * @param {Array} parents the parents of this record
    * @param {Number,String} primaryKey the primary key to find
@@ -575,6 +601,7 @@ var RestModel = Ember.Object.extend({
    * Update a model via PATCH.
    *
    * @method patch
+   * @async
    * @static
    * @private
    * @param {Array} parents the parents of this record
@@ -596,6 +623,7 @@ var RestModel = Ember.Object.extend({
    * Create a model via POST.
    *
    * @method post
+   * @async
    * @static
    * @private
    * @param {Array} parents the parents of this record
