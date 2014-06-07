@@ -249,6 +249,10 @@ appropriate records.
 On endpoints that return single objects, the cache will only update the cached
 object.
 
+As long as what's rendered by your Ember app is the same array or object
+returned by a RestModel method (e.g. `::all`, `#find`), your view should render
+immediately, and then update once the background API request completes.
+
 _*This can currently break for paginated APIs, as it is impossible to
 determine whether a record has been removed or simply relocated to a different
 page or range._
