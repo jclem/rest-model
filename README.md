@@ -6,6 +6,11 @@ RestModel is a library for interacting with a REST API in Ember. Its goal is to
 provide a library with predictable behavior and which can be easily extended to
 meet custom needs.
 
+## Documentation
+
+This readme, and more detailed work-in-progress
+[here, on GitHub pages](http://dingus.io/rest-model/).
+
 ## Install
 
 ```bash
