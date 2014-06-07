@@ -78,7 +78,8 @@ var RestModel = Ember.Object.extend({
    * Delete this record.
    *
    * @method delete
-   * @return {Ember.RSVP.Promise} the promise resolved with the deleted record
+   * @return {Ember.RSVP.Promise} a promise resolved with `this`, a
+   *   {{#crossLink "RestModel"}}RestModel{{/crossLink}}
    */
   delete: function() {
     return this.submit('delete');
@@ -98,7 +99,8 @@ var RestModel = Ember.Object.extend({
    * Fetch the current model
    *
    * @method fetch
-   * @return {RestModel}
+   * @return {Ember.RSVP.Promise} a promise resolved with `this`, a
+   *   {{#crossLink "RestModel"}}RestModel{{/crossLink}}
    */
   fetch: function(findKey) {
     var parentKeys = this.get('parentKeys');
@@ -193,7 +195,8 @@ var RestModel = Ember.Object.extend({
    * @param {Object} [options] options that will be passed to `ajax`
    * @param {String} options.withURL a url template (e.g. `/foo/:bar`) to
    *   make the request with
-   * @return {Ember.RSVP.Promise} a promise to be resolved with the saved model
+   * @return {Ember.RSVP.Promise} a promise resolved with `this`, a
+   *   {{#crossLink "RestModel"}}RestModel{{/crossLink}}
    * @example
    *     Foo.create({ name: 'bar' }).save().then(function() {
    *       // (succeeded)
@@ -260,7 +263,8 @@ var RestModel = Ember.Object.extend({
    * @param {Object} [options] options that will be passed to `ajax`
    * @param {String} options.withURL a url template (e.g. `/foo/:bar`) to
    *   make the request with
-   * @return {Ember.RSVP.Promise} a promise to be resolved with the model
+   * @return {Ember.RSVP.Promise} a promise resolved with `this`, a
+   *   {{#crossLink "RestModel"}}RestModel{{/crossLink}}
    */
   submit: function(method, options) {
     var parentKeys = this.getParentKeys();
@@ -301,7 +305,8 @@ var RestModel = Ember.Object.extend({
    * @param {String} options.method the HTTP verb to use
    * @param {String} options.data the JSON-string request data to send
    * @param {Boolean} options.cache perform caching with this request
-   * @return {Ember.RSVP.Promise} a promise to be resolved with a model or models
+   * @return {Ember.RSVP.Promise} a promise resolved with an instance or
+   *   array of {{#crossLink}}RestModel{{/crossLink}}s
    */
   ajax: function(options) {
     var self     = this;
@@ -356,7 +361,8 @@ var RestModel = Ember.Object.extend({
    * @param {Object} [options] options that will be passed to `ajax`
    * @param {String} options.withURL a url template (e.g. `/foo/:bar`) to
    *   construct the URL for this request from, instead of the default URL.
-   * @return {Ember.RSVP.Promise} a promise to be resolved with the models
+   * @return {Ember.RSVP.Promise} a promise resolved with an array of
+   *   {{#crossLink}}RestModel{{/crossLink}}s
    * @example
    *     // With no parent
    *     Post.all();
@@ -415,7 +421,8 @@ var RestModel = Ember.Object.extend({
    * @private
    * @param {Array} parents the parents of this record
    * @param {RestModel} model the model to delete
-   * @return {Ember.RSVP.Promise} a promise to be resolved with the deleted model
+   * @return {Ember.RSVP.Promise} a promise resolved with an instance of
+   *   {{#crossLink}}RestModel{{/crossLink}}
    */
   delete: function(parents, model) {
     var params = this.extractPrimaryKeys(parents);
@@ -481,7 +488,8 @@ var RestModel = Ember.Object.extend({
    * @static
    * @param {Array} parents the parents of this record
    * @param {Number,String} primaryKey the primary key to find
-   * @return {Ember.RSVP.Promise} a promise to be resolved with the model
+   * @return {Ember.RSVP.Promise} a promise resolved with an instance of
+   *   {{#crossLink}}RestModel{{/crossLink}}
    * @example
    *     // With no parent
    *     Post.find(1);
@@ -574,7 +582,8 @@ var RestModel = Ember.Object.extend({
    * @param {Object} [options] options that will be passed to `ajax`
    * @param {String} options.withURL a url template (e.g. `/foo/:bar`) to
    *   make the request with
-   * @return {Ember.RSVP.Promise} a promise to be resolved with the model
+   * @return {Ember.RSVP.Promise} a promise resolved with an instance of
+   *   {{#crossLink}}RestModel{{/crossLink}}
    */
   patch: function(parents, model, options) {
     var params = this.extractPrimaryKeys(parents);
@@ -594,7 +603,8 @@ var RestModel = Ember.Object.extend({
    * @param {Object} [options] options that will be passed to `ajax`
    * @param {String} options.withURL a url template (e.g. `/foo/:bar`) to
    *   make the request with
-   * @return {Ember.RSVP.Promise} a promise to be resolved with the model
+   * @return {Ember.RSVP.Promise} a promise resolved with an instance of
+   *   {{#crossLink}}RestModel{{/crossLink}}
    */
   post: function(parents, model, options) {
     var params = this.extractPrimaryKeys(parents);
@@ -622,7 +632,8 @@ var RestModel = Ember.Object.extend({
    * @private
    * @param {Array,Object} data the JSON response data
    * @param {Object} options the request options
-   * @return {Array,RestModel} a instance or array of `RestModel`s
+   * @return {Array,RestModel} a instance or array of
+   *   {{#crossLink "RestModel"}}RestModel{{/crossLink}}s
    */
   processResponse: function(data, options) {
     if (this.forceArray) {
