@@ -12,6 +12,7 @@
     "sinon": "^1.9.1"
   },
   "scripts": {
+    "build": "gulp",
     "test": "mocha test/**/*-test.js -R nyan -t 50"
   },
   "jshintConfig": {

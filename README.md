@@ -259,8 +259,8 @@ Before a release, RestModel should be built with a non-uglified and an uglified
 version into its `dist` directory:
 
 ```sh
-npm install -g gulp
-gulp
+npm install
+npm run build
 ```
 
 ## Testing
