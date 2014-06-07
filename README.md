@@ -82,7 +82,7 @@ comment.save().then(function(comment) { // POST /posts/1/comments
 
 There is no concept of belongs-to/has-many in RestModel. All models are managed
 individually, and `parents` can be used on any record&mdash;their primary keys
-will be interpolated as appropriate into the URL.
+will be interpolated as is appropriate into the URL.
 
 ### Custom Namespaces
 
@@ -189,17 +189,17 @@ When an array is returned, `::deserializeArray` is called on its class, with the
 API response array as the argument. By default, this simply returns a map of
 calling `::deserialize` with each member of the array.
 
-These methods can be overridden for custom API response deserializing.
+These methods can be overridden for custom API response deserialization.
 
 ### Setting Custom Request Headers
 
 Each class can choose to implement a `getBeforeSend` function. This function
-should return a function whose single argument is a jQuery XMLHTTPRequest
+should return a function whose single argument is a jQuery XMLHttpRequest
 object (`jqXHR`). Custom request headers can be added and removed here, as it
 will be called on every AJAX request for this class.
 
 The `getBeforeSend` method itself receives an object of options, including
-things like the request method (e.g. `'GET'`) to be used by impending AJAX
+things like the request method (e.g. `'GET'`) to be used by the impending AJAX
 request.
 
 ```javascript
@@ -243,9 +243,9 @@ appropriate records.
 On endpoints that return single objects, the cache will only update the cached
 object.
 
-**\* This can currently break for paginated APIs, as it is impossible to
+_*This can currently break for paginated APIs, as it is impossible to
 determine whether a record has been removed or simply relocated to a different
-page or range.
+page or range._
 
 ## Building
 
