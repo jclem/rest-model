@@ -61,6 +61,15 @@ describe('RestModel', function() {
       model.fetch();
       jQuery.ajax.args[0][0].url.should.eql('/posts/1');
     });
+
+    it('updates the fetching record', function(done) {
+      this.resolve = { name: 'name' };
+      var post = Post.create({ id: 1 });
+      post.fetch().then(function() {
+        post.get('name').should.eql('name');
+        done();
+      });
+    });
   });
 
   describe('#isDirty', function() {

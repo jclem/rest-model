@@ -104,7 +104,10 @@ var RestModel = Ember.Object.extend({
     var parentKeys = this.get('parentKeys');
     var key        = this.getPrimaryKey();
 
-    return this.constructor.find(parentKeys, key);
+    return this.constructor.find(parentKeys, key).then(function(record) {
+      this.setProperties(record);
+      return this;
+    }.bind(this));
   },
 
   /**
