@@ -8,9 +8,39 @@ var cache = _dereq_('./lib/cache');
 var utils = _dereq_('./lib/utils');
 
 /**
+ * RestModel provides a way to intereact with an API in an Ember app.
+ *
+ *     var App = RestModel.extend().reopenClass({
+ *       url: '/apps'
+ *     });
+ *
+ *     App.all().then(function(apps) { // GET "/apps"
+ *       // `apps` is an array of App
+ *     }):
+ *
+ *     App.find(1).then(function(app) { // GET "/apps/1"
+ *       // `app` is the App with ID "1"
+ *     });
+ *
  * @class RestModel
+ * @extends Ember.Object
+ * @constructor
+ * @param {Object} attribtues the attributes set as the original properties on
+ *   this instance
  */
 var RestModel = Ember.Object.extend({
+  /**
+   * Called when an API request returns with a non-successful status code. This
+   * no-op function can be used to set errors on the record.
+   *
+   * @method assignErrors
+   * @param {jQuery XMLHttpRequest} jqXHR the jQuery XMLHttpRequest option that
+   *   represents the request and respone
+   */
+  assignErrors: function(jqXHR) {
+    // no-op
+  },
+
   /**
    * The attributes that are returned via the API for this model. This is
    * necessary to distinguish between things like `created_at` and non-API
@@ -67,7 +97,9 @@ var RestModel = Ember.Object.extend({
    * Delete this record.
    *
    * @method delete
-   * @return {Ember.RSVP.Promise} the promise resolved with the deleted record
+   * @async
+   * @return {Ember.RSVP.Promise} a promise resolved with `this`, a
+   *   {{#crossLink "RestModel"}}RestModel{{/crossLink}}
    */
   delete: function() {
     return this.submit('delete');
@@ -87,13 +119,18 @@ var RestModel = Ember.Object.extend({
    * Fetch the current model
    *
    * @method fetch
-   * @return {RestModel}
+   * @async
+   * @return {Ember.RSVP.Promise} a promise resolved with `this`, a
+   *   {{#crossLink "RestModel"}}RestModel{{/crossLink}}
    */
   fetch: function(findKey) {
     var parentKeys = this.get('parentKeys');
     var key        = this.getPrimaryKey();
 
-    return this.constructor.find(parentKeys, key);
+    return this.constructor.find(parentKeys, key).then(function(record) {
+      this.setProperties(record);
+      return this;
+    }.bind(this));
   },
 
   /**
@@ -176,10 +213,12 @@ var RestModel = Ember.Object.extend({
    * primary key, PATCH. Otherwise, POST.
    *
    * @method save
+   * @async
    * @param {Object} [options] options that will be passed to `ajax`
    * @param {String} options.withURL a url template (e.g. `/foo/:bar`) to
    *   make the request with
-   * @return {Ember.RSVP.Promise} a promise to be resolved with the saved model
+   * @return {Ember.RSVP.Promise} a promise resolved with `this`, a
+   *   {{#crossLink "RestModel"}}RestModel{{/crossLink}}
    * @example
    *     Foo.create({ name: 'bar' }).save().then(function() {
    *       // (succeeded)
@@ -241,12 +280,14 @@ var RestModel = Ember.Object.extend({
    * `isSaving` or `isDeleting` attribute.
    *
    * @method submit
+   * @async
    * @private
    * @param {String} method the method to be used (e.g. `delete`, `patch`)
    * @param {Object} [options] options that will be passed to `ajax`
    * @param {String} options.withURL a url template (e.g. `/foo/:bar`) to
    *   make the request with
-   * @return {Ember.RSVP.Promise} a promise to be resolved with the model
+   * @return {Ember.RSVP.Promise} a promise resolved with `this`, a
+   *   {{#crossLink "RestModel"}}RestModel{{/crossLink}}
    */
   submit: function(method, options) {
     var parentKeys = this.getParentKeys();
@@ -264,8 +305,7 @@ var RestModel = Ember.Object.extend({
         self.setProperties(data);
         resolve(self);
       }, function(jqXHR) {
-        var responseError = jqXHR.responseJSON;
-        self.get('errors').setObjects([responseError.message]);
+        self.assignErrors(jqXHR);
         reject(jqXHR);
       }).finally(function() {
         if (method === 'delete') {
@@ -281,6 +321,7 @@ var RestModel = Ember.Object.extend({
    * Make an AJAX request with the given options.
    *
    * @method ajax
+   * @async
    * @static
    * @private
    * @param {Object} options options defining the request
@@ -288,7 +329,8 @@ var RestModel = Ember.Object.extend({
    * @param {String} options.method the HTTP verb to use
    * @param {String} options.data the JSON-string request data to send
    * @param {Boolean} options.cache perform caching with this request
-   * @return {Ember.RSVP.Promise} a promise to be resolved with a model or models
+   * @return {Ember.RSVP.Promise} a promise resolved with an instance or
+   *   array of {{#crossLink}}RestModel{{/crossLink}}s
    */
   ajax: function(options) {
     var self     = this;
@@ -338,12 +380,14 @@ var RestModel = Ember.Object.extend({
    * Fetch all records from the base URL for this class.
    *
    * @method all
+   * @async
    * @static
    * @param {Array} [parents] the parent IDs or objects to build the path with
    * @param {Object} [options] options that will be passed to `ajax`
    * @param {String} options.withURL a url template (e.g. `/foo/:bar`) to
    *   construct the URL for this request from, instead of the default URL.
-   * @return {Ember.RSVP.Promise} a promise to be resolved with the models
+   * @return {Ember.RSVP.Promise} a promise resolved with an array of
+   *   {{#crossLink}}RestModel{{/crossLink}}s
    * @example
    *     // With no parent
    *     Post.all();
@@ -398,11 +442,13 @@ var RestModel = Ember.Object.extend({
    * Delete a model
    *
    * @method delete
+   * @async
    * @static
    * @private
    * @param {Array} parents the parents of this record
    * @param {RestModel} model the model to delete
-   * @return {Ember.RSVP.Promise} a promise to be resolved with the deleted model
+   * @return {Ember.RSVP.Promise} a promise resolved with an instance of
+   *   {{#crossLink}}RestModel{{/crossLink}}
    */
   delete: function(parents, model) {
     var params = this.extractPrimaryKeys(parents);
@@ -465,10 +511,12 @@ var RestModel = Ember.Object.extend({
    * argument can be in the first position for convenience.
    *
    * @method find
+   * @async
    * @static
    * @param {Array} parents the parents of this record
    * @param {Number,String} primaryKey the primary key to find
-   * @return {Ember.RSVP.Promise} a promise to be resolved with the model
+   * @return {Ember.RSVP.Promise} a promise resolved with an instance of
+   *   {{#crossLink}}RestModel{{/crossLink}}
    * @example
    *     // With no parent
    *     Post.find(1);
@@ -554,6 +602,7 @@ var RestModel = Ember.Object.extend({
    * Update a model via PATCH.
    *
    * @method patch
+   * @async
    * @static
    * @private
    * @param {Array} parents the parents of this record
@@ -561,7 +610,8 @@ var RestModel = Ember.Object.extend({
    * @param {Object} [options] options that will be passed to `ajax`
    * @param {String} options.withURL a url template (e.g. `/foo/:bar`) to
    *   make the request with
-   * @return {Ember.RSVP.Promise} a promise to be resolved with the model
+   * @return {Ember.RSVP.Promise} a promise resolved with an instance of
+   *   {{#crossLink}}RestModel{{/crossLink}}
    */
   patch: function(parents, model, options) {
     var params = this.extractPrimaryKeys(parents);
@@ -574,6 +624,7 @@ var RestModel = Ember.Object.extend({
    * Create a model via POST.
    *
    * @method post
+   * @async
    * @static
    * @private
    * @param {Array} parents the parents of this record
@@ -581,7 +632,8 @@ var RestModel = Ember.Object.extend({
    * @param {Object} [options] options that will be passed to `ajax`
    * @param {String} options.withURL a url template (e.g. `/foo/:bar`) to
    *   make the request with
-   * @return {Ember.RSVP.Promise} a promise to be resolved with the model
+   * @return {Ember.RSVP.Promise} a promise resolved with an instance of
+   *   {{#crossLink}}RestModel{{/crossLink}}
    */
   post: function(parents, model, options) {
     var params = this.extractPrimaryKeys(parents);
@@ -609,7 +661,8 @@ var RestModel = Ember.Object.extend({
    * @private
    * @param {Array,Object} data the JSON response data
    * @param {Object} options the request options
-   * @return {Array,RestModel} a instance or array of `RestModel`s
+   * @return {Array,RestModel} a instance or array of
+   *   {{#crossLink "RestModel"}}RestModel{{/crossLink}}s
    */
   processResponse: function(data, options) {
     if (this.forceArray) {
@@ -633,7 +686,7 @@ var RestModel = Ember.Object.extend({
 
   /**
    * Update a cached response, adding new models to the cached response and
-   * removing them wehre appropriate.
+   * removing them where appropriate.
    *
    * @method updateCachedResponse
    * @param {Array,Object} cachedResponse an instance or array of cached mdoels
@@ -676,6 +729,7 @@ var utils = _dereq_('./utils');
 
 /**
  * A set of functions responsible for managing RestModel's localStorage cache.
+ *
  * @class RestModel.Cache
  */
 
