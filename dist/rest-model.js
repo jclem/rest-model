@@ -427,7 +427,7 @@ var RestModel = Ember.Object.extend({
       url = this.url;
     }
 
-    var path      = Ember.String.fmt(url.replace(/:[^\/]+/, '%@'), params);
+    var path      = Ember.String.fmt(url.replace(/:[^\/]+/g, '%@'), params);
     var namespace = this.namespace || RestModel.namespace;
     namespace     = namespace ? '/' + namespace : '';
 
