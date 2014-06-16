@@ -101,8 +101,8 @@ var RestModel = Ember.Object.extend({
    * @return {Ember.RSVP.Promise} a promise resolved with `this`, a
    *   {{#crossLink "RestModel"}}RestModel{{/crossLink}}
    */
-  delete: function() {
-    return this.submit('delete');
+  delete: function(options) {
+    return this.submit('delete', options);
   },
 
   /**
@@ -454,9 +454,9 @@ var RestModel = Ember.Object.extend({
    * @return {Ember.RSVP.Promise} a promise resolved with an instance of
    *   {{#crossLink}}RestModel{{/crossLink}}
    */
-  delete: function(parents, model) {
+  delete: function(parents, model, options) {
     var params = this.extractPrimaryKeys(parents);
-    var url    = this.buildURL(params, model.getPrimaryKey());
+    var url    = this.buildURL(params, model.getPrimaryKey(), options);
     return this.ajax({ url: url, method: 'DELETE' });
   },
 
