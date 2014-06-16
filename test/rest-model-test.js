@@ -200,6 +200,16 @@ describe('RestModel', function() {
     });
 
     describe('when there are parents', function() {
+      describe('and the parents are not models', function() {
+        it('requests the proper URL', function() {
+          var post     = Post.create({ id: 2 });
+          this.model   = Comment.create({ parents: [post.id], id: 1, created_at: '2013/01/01' });
+          this.request = this.model.save.bind(this.model);
+          this.model.save();
+          jQuery.ajax.args[0][0].url.should.eql('/posts/2/comments/1');
+        });
+      });
+
       describe('when the model has been persisted', function() {
         beforeEach(function() {
           var post     = Post.create({ id: 2 });

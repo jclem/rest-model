@@ -145,7 +145,11 @@ var RestModel = Ember.Object.extend({
     if (!this.parents) return [];
 
     return this.parents.map(function(parent) {
-      return parent.getPrimaryKey();
+      if (typeof parent === 'number' || typeof parent === 'string') {
+        return parent;
+      } else {
+        return parent.getPrimaryKey();
+      }
     });
   },
 
