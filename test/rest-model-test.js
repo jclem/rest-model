@@ -168,6 +168,56 @@ describe('RestModel', function() {
       });
     });
 
+    describe('when saveViaPut is set', function() {
+      var model;
+
+      before(function() {
+        Post.saveViaPut = true;
+      });
+
+      beforeEach(function() {
+        this.model   = Post.create({ id: 1, created_at: '2013/01/01' });
+        this.request = this.model.save.bind(this.model);
+      });
+
+      after(function() {
+        Post.saveViaPut = false;
+      });
+
+      describe('and the model has been persisted', function() {
+
+        beforeEach(function() {
+          model = Post.create({ id: 1, created_at: '2013/01/01' });
+        });
+
+        it('saves via PUT', function() {
+          model.save();
+          jQuery.ajax.args[0][0].type.should.eql('PUT');
+        });
+
+        it('saves without a primary key param', function() {
+          model.save();
+          jQuery.ajax.args[0][0].url.should.eql('/posts');
+        });
+      });
+
+      describe('and the model has not been persisted', function() {
+        beforeEach(function() {
+          model = Post.create();
+        });
+
+        it('saves via PUT', function() {
+          model.save();
+          jQuery.ajax.args[0][0].type.should.eql('PUT');
+        });
+
+        it('saves without a primary key param', function() {
+          model.save();
+          jQuery.ajax.args[0][0].url.should.eql('/posts');
+        });
+      });
+    });
+
     describe('when there are no parents', function() {
       describe('when the model has been persisted', function() {
         beforeEach(function() {
