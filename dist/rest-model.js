@@ -240,6 +240,10 @@ var RestModel = Ember.Object.extend({
       method = 'post';
     }
 
+    if (this.constructor.saveViaPut) {
+      method = 'put';
+    }
+
     return this.submit(method, options).then(function() {
       return self.setOriginalProperties();
     });
@@ -647,6 +651,28 @@ var RestModel = Ember.Object.extend({
   },
 
   /**
+   * Create or update a modal via PUT.
+   *
+   * @method put
+   * @async
+   * @static
+   * @private
+   * @param {Array} parents the parents of this record
+   * @param {RestModel} model the model to create
+   * @param {Object} [options] options that will be passed to `ajax`
+   * @param {String} options.withURL a url template (e.g. `/foo/:bar`) to
+   *   make the request with
+   * @return {Ember.RSVP.Promise} a promise resolved with an instance of
+   *   {{#crossLink}}RestModel{{/crossLink}}
+   */
+  put: function(parents, model, options) {
+    var params = this.extractPrimaryKeys(parents);
+    var url    = this.buildURL(params, null, options);
+    var data   = model.serialize('put');
+    return this.ajax({ url: url, method: 'PUT', data: data });
+  },
+
+  /**
    * The primary keys to use to find records of this class. These will be cycled
    * through in order until one is found to use for a primary key.
    *
@@ -689,10 +715,23 @@ var RestModel = Ember.Object.extend({
   },
 
   /**
+   * If true, calling `save` on any record will always hit a URL without a
+   * primary key, (e.g. "/posts", not "/posts/1"), and the PUT HTTP verb will
+   * be used in place of POST or PATCH.
+   *
+   * @property saveViaPut
+   * @static
+   * @type Boolean
+   * @default false
+   */
+  saveViaPut: false,
+
+  /**
    * Update a cached response, adding new models to the cached response and
    * removing them where appropriate.
    *
    * @method updateCachedResponse
+   * @static
    * @param {Array,Object} cachedResponse an instance or array of cached mdoels
    * @param {Array,Object} newResponse the instance or array of new response
    *   models
