@@ -730,6 +730,7 @@ var RestModel = Ember.Object.extend({
    * removing them where appropriate.
    *
    * @method updateCachedResponse
+   * @static
    * @param {Array,Object} cachedResponse an instance or array of cached mdoels
    * @param {Array,Object} newResponse the instance or array of new response
    *   models
