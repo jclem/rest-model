@@ -102,7 +102,7 @@ var RestModel = Ember.Object.extend({
      * @property isDirty
      * @type Boolean
      */
-    var isDirty = Ember.computed.apply(Ember, this.get('attrs').concat(function(key, value) {
+    var isDirty = Ember.computed.apply(Ember, this.get('observableAttrs').concat(function(key, value) {
       var attrs              = self.get('attrs');
       var originalProperties = self.get('originalProperties');
       var i;
@@ -221,6 +221,25 @@ var RestModel = Ember.Object.extend({
     var createdAt = this.get('created_at');
     return (typeof createdAt !== 'undefined' && createdAt !== null);
   }.property('created_at'),
+
+  /**
+   * The list of observable attribute names for this model. For a non array
+   * "key", will return "key". For an array "key", will return "key.[]".
+   *
+   * @property observableAttrs
+   * @type Array
+   */
+  observableAttrs: function() {
+    return this.get('attrs').map(function(attr) {
+      var value = this.get(attr);
+
+      if (Ember.isArray(value)) {
+        return attr + '.[]';
+      } else {
+        return attr;
+      }
+    }.bind(this));
+  }.property('attrs.[]'),
 
   /**
    * Pick specific attributes from a model.
