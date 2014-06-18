@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "gulp",
-    "test": "mocha test/**/*-test.js -R nyan -t 50"
+    "test": "mocha test/**/*-test.js -t 50"
   },
   "jshintConfig": {
     "eqeqeq": true,
