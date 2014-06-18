@@ -398,7 +398,7 @@ var RestModel = Ember.Object.extend({
    * @param {String} options.data the JSON-string request data to send
    * @param {Boolean} options.cache perform caching with this request
    * @param {Boolean} options.rawResponse resolve with the response data rather
-   *   than an instance of RestModel (only for non-GET-or-DELETE)
+   *   than an instance of RestModel (only for non-GET)
    * @return {Ember.RSVP.Promise} a promise resolved with an instance or
    *   array of {{#crossLink}}RestModel{{/crossLink}}s
    */
@@ -527,7 +527,7 @@ var RestModel = Ember.Object.extend({
   delete: function(parents, model, options) {
     var params = this.extractPrimaryKeys(parents);
     var url    = this.buildURL(params, model.getPrimaryKey(), options);
-    return this.ajax({ url: url, method: 'DELETE' });
+    return this.ajax({ url: url, method: 'DELETE', rawResponse: true });
   },
 
   /**
