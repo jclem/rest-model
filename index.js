@@ -258,12 +258,18 @@ var RestModel = Ember.Object.extend({
   },
 
   /**
-   * Reverts an object to its original properties.
+   * Reverts an object to its original properties. Copyies values from the
+   * original properties so that array references are not passed around.
    *
    * @method revert
    */
   revert: function() {
-    return this.setProperties(this.get('originalProperties'));
+    var originalProperties = this.get('originalProperties');
+
+    return this.setProperties(Object.keys(originalProperties).reduce(function(object, key) {
+      object[key] = Ember.copy(originalProperties[key], true);
+      return object;
+    }.bind(this), {}));
   },
 
   /**
