@@ -102,6 +102,25 @@ describe('RestModel', function() {
         post.get('isDirty').should.eql(false);
       });
     });
+
+    describe('when the model has array properties', function() {
+      beforeEach(function() {
+        post = Post.create({ foo: [1] });
+      });
+
+      describe('and an array property has not changed', function() {
+        it('is false', function() {
+          post.get('isDirty').should.eql(false);
+        });
+      });
+
+      describe('and an array property has changed', function() {
+        it('is true', function() {
+          post.get('foo').pushObject(2);
+          post.get('isDirty').should.eql(true);
+        });
+      });
+    });
   });
 
   describe('#isPersisted', function() {

@@ -53,6 +53,36 @@ var RestModel = Ember.Object.extend({
   }.property(),
 
   /**
+   * Compare the contents of two arrays.
+   *
+   * @method arraysAreEqual
+   * @param {Array} arrayA the first array to compare
+   * @param {Array} arrayB the second array to compare
+   * @return {Boolean} true if the arrays are equal, otherwise false
+   * @private
+   */
+  arraysAreEqual: function(arrayA, arrayB) {
+    var iteratedArray  = arrayA.length >= arrayB.length ? arrayA : arrayB;
+    var comparedArray = arrayA.length >= arrayB.length ? arrayB : arrayA;
+    var i, iteratedItem, comparedItem;
+
+    for (i = 0; i < iteratedArray.length + 1; i++) {
+      iteratedItem = iteratedArray[i];
+      comparedItem = comparedArray[i];
+
+      if (Ember.isArray(iteratedItem) && Ember.isArray(comparedItem)) {
+        if (!this.arraysAreEqual(iteratedItem, comparedItem)) {
+          return false;
+        }
+      } else if (!Ember.isEqual(iteratedItem, comparedItem)) {
+        return false;
+      }
+    }
+
+    return true;
+  },
+
+  /**
    * Called when the record is initialized, setting its `originalProperties` to
    * a copy of its original properties.
    *
@@ -81,7 +111,13 @@ var RestModel = Ember.Object.extend({
         key   = attrs[i];
         value = self.get(key);
 
-        if (value !== originalProperties.get(key)) {
+        var originalValue = originalProperties.get(key);
+
+        if (Ember.isArray(value) && Ember.isArray(originalValue)) {
+          if (!this.arraysAreEqual(value, originalValue)) {
+            return true;
+          }
+        } else if (value !== originalValue) {
           return true;
         }
       }
