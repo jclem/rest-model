@@ -117,7 +117,7 @@ var RestModel = Ember.Object.extend({
           if (!this.arraysAreEqual(value, originalValue)) {
             return true;
           }
-        } else if (value !== originalValue) {
+        } else if (!Ember.isEqual(value, originalValue)) {
           return true;
         }
       }
