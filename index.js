@@ -397,6 +397,8 @@ var RestModel = Ember.Object.extend({
    * @param {String} options.method the HTTP verb to use
    * @param {String} options.data the JSON-string request data to send
    * @param {Boolean} options.cache perform caching with this request
+   * @param {Boolean} options.rawResponse resolve with the response data rather
+   *   than an instance of RestModel (only for non-GET-or-DELETE)
    * @return {Ember.RSVP.Promise} a promise resolved with an instance or
    *   array of {{#crossLink}}RestModel{{/crossLink}}s
    */
@@ -435,7 +437,11 @@ var RestModel = Ember.Object.extend({
         if (processedCache) {
           self.updateCachedResponse(processedCache, processedResponse);
         } else {
-          resolve(processedResponse);
+          if (options.rawResponse) {
+            resolve(data);
+          } else {
+            resolve(processedResponse);
+          }
         }
       }, function(jqXHR) {
         delete jqXHR.then;
@@ -685,7 +691,7 @@ var RestModel = Ember.Object.extend({
     var params = this.extractPrimaryKeys(parents);
     var url    = this.buildURL(params, model.getPrimaryKey(), options);
     var data   = model.serialize('patch');
-    return this.ajax({ url: url, method: 'PATCH', data: data });
+    return this.ajax({ url: url, method: 'PATCH', data: data, rawResponse: true });
   },
 
   /**
@@ -707,7 +713,7 @@ var RestModel = Ember.Object.extend({
     var params = this.extractPrimaryKeys(parents);
     var url    = this.buildURL(params, null, options);
     var data   = model.serialize('post');
-    return this.ajax({ url: url, method: 'POST', data: data });
+    return this.ajax({ url: url, method: 'POST', data: data, rawResponse: true });
   },
 
   /**
@@ -729,7 +735,7 @@ var RestModel = Ember.Object.extend({
     var params = this.extractPrimaryKeys(parents);
     var url    = this.buildURL(params, null, options);
     var data   = model.serialize('put');
-    return this.ajax({ url: url, method: 'PUT', data: data });
+    return this.ajax({ url: url, method: 'PUT', data: data, rawResponse: true });
   },
 
   /**
