@@ -4,6 +4,8 @@ var benv  = require('benv');
 var sinon = require('sinon');
 var cache = {};
 
+global.context = describe;
+
 before(function(done) {
   benv.setup(function() {
     global.jQuery       = require('../bower_components/jquery/dist/jquery.min.js');
