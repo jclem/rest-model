@@ -62,7 +62,7 @@ var RestModel = Ember.Object.extend({
    * @private
    */
   arraysAreEqual: function(arrayA, arrayB) {
-    var iteratedArray  = arrayA.length >= arrayB.length ? arrayA : arrayB;
+    var iteratedArray = arrayA.length >= arrayB.length ? arrayA : arrayB;
     var comparedArray = arrayA.length >= arrayB.length ? arrayB : arrayA;
     var i, iteratedItem, comparedItem;
 
