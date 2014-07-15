@@ -260,7 +260,22 @@ module.exports = Ember.Object.extend({
    * @private
    */
   serialize: function() {
-    return JSON.stringify(this);
+    return JSON.stringify(this.toObject());
+  },
+
+  /**
+   * Get an object representation of this instance using keys from the `attrs`
+   * property.
+   *
+   * @method toObjec
+   * @return {Object} the plain object representation of this instance
+   */
+  toObject: function() {
+    return this.get('attrs').reduce(function(properties, key) {
+      var value = this.get(key);
+      properties[key] = value;
+      return properties;
+    }.bind(this), {});
   }
 }).reopenClass({
   /**
