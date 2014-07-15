@@ -276,7 +276,7 @@ module.exports = Ember.Object.extend({
    * Get an object representation of this instance using keys from the `attrs`
    * property.
    *
-   * @method toObjec
+   * @method toObject
    * @return {Object} the plain object representation of this instance
    */
   toObject: function() {
