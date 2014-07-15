@@ -25,17 +25,20 @@ module.exports = Ember.Object.extend({
 
     var isDirty = Ember.computed.apply(Ember, this.get('attrs')
       .concat(function() {
-        var attrs              = this.get('attrs');
+        var attrNames          = this.get('attrNames');
         var originalProperties = this.get('originalProperties');
         var key, value, originalValue;
 
-        for (var i = 0; i < attrs.length; i++) {
-          key   = attrs[i];
-          value = this.get(key);
-
+        for (var i = 0; i < attrNames.length; i++) {
+          key           = attrNames[i];
+          value         = this.get(key);
           originalValue = originalProperties.get(key);
 
-          if (!Ember.isEqual(value, originalValue)) {
+          if (Em.isArray(value)) {
+            if (!utils.arraysEqual(value, originalValue)) {
+              return true;
+            }
+          } else if (!Ember.isEqual(value, originalValue)) {
             return true;
           }
         }
@@ -57,6 +60,9 @@ module.exports = Ember.Object.extend({
   /**
    * A declared array of attributes of this class. These are the attributes that
    * are relied upon for the `isDirty` property, as well as other functionality.
+   * Objects are not supported, but flat arrays are.
+   *
+   * For attributes that are arrays, indicate them as `property.[]`.
    *
    * @property attrs
    * @type {Array}
@@ -82,6 +88,24 @@ module.exports = Ember.Object.extend({
    * @type {Boolean}
    */
   isNew: Ember.computed.none('primaryKey'),
+
+  /**
+   * The names of the declared `attributes` without their observable modifiers
+   * (e.g. will return `['tags']`, not `['tags.[]']`).
+   *
+   * @property attrNames
+   * @private
+   * @type {Array}
+   */
+  attrNames: function() {
+    return this.get('attrs').map(function(attr) {
+      if (/\.\[\]$/.test(attr)) {
+        return attr.split('.')[0];
+      } else {
+        return attr;
+      }
+    });
+  }.property('attrs'),
 
   /**
    * The parents of this instance.
@@ -210,9 +234,16 @@ module.exports = Ember.Object.extend({
    * @method revert
    */
   revert: function() {
-    this.get('attrs').forEach(function(key) {
+    var attrs = this.get('attrs');
+
+    this.get('attrNames').forEach(function(key, i) {
       var value = Ember.copy(this.get('originalProperties.%@'.fmt(key)));
-      this.set(key, value);
+
+      if (/\.\[\]$/.test(attrs[i])) {
+        this.get(key).setObjects(value);
+      } else {
+        this.set(key, value);
+      }
     }.bind(this));
   },
 
@@ -252,9 +283,9 @@ module.exports = Ember.Object.extend({
    * @private
    */
   setOriginalProperties: function() {
-    var attrs = this.get('attrs');
+    var attrNames = this.get('attrNames');
 
-    this.set('originalProperties', attrs.reduce(function(properties, key) {
+    this.set('originalProperties', attrNames.reduce(function(properties, key) {
       var value = this.get(key);
       properties.set(key, Ember.copy(value, true));
       return properties;
@@ -280,7 +311,7 @@ module.exports = Ember.Object.extend({
    * @return {Object} the plain object representation of this instance
    */
   toObject: function() {
-    return this.get('attrs').reduce(function(properties, key) {
+    return this.get('attrNames').reduce(function(properties, key) {
       var value = this.get(key);
       properties[key] = value;
       return properties;

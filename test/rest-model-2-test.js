@@ -18,7 +18,11 @@ describe('RestModelV2', function() {
 
     Post = RestModel.extend({
       attrs: function() {
-        return ['name'];
+        return ['name', 'tags.[]'];
+      }.property(),
+
+      tags: function() {
+        return [];
       }.property()
     }).reopenClass({
       base: 'posts'
@@ -58,6 +62,13 @@ describe('RestModelV2', function() {
     context('when a simple attribute has changed', function() {
       it('is true', function() {
         post.set('name', 'new-name');
+        post.get('isDirty').should.be.true;
+      });
+    });
+
+    context('when an array attribute has changed', function() {
+      it('is true', function() {
+        post.get('tags').pushObject('draft');
         post.get('isDirty').should.be.true;
       });
     });
@@ -193,11 +204,32 @@ describe('RestModelV2', function() {
     beforeEach(function() {
       post = Post.create({ name: 'foo' });
       post.set('name', 'bar');
+      post.get('tags').pushObject('draft');
       post.revert();
     });
 
     it('reverts back to the original properties', function() {
       post.get('name').should.eql('foo');
+    });
+
+    it('reverts array properties', function() {
+      post.get('tags').toArray().should.eql([]);
+    });
+
+    it('reverts array properties in a KVO-friendly way', function() {
+      var changed;
+
+      Post.reopen({
+        change: function() {
+          changed = true
+        }.observes('tags.[]')
+      });
+
+      post = Post.create();
+      post.get('tags').pushObject('foo');
+      changed = false;
+      post.revert();
+      changed.should.be.true;
     });
   });
 
@@ -219,7 +251,7 @@ describe('RestModelV2', function() {
     it('saves with a serialized form of the record', function() {
       post.set('name', 'bar');
       post.save();
-      jQuery.ajax.lastCall.args[0].data.should.eql('{"name":"bar"}');
+      jQuery.ajax.lastCall.args[0].data.should.eql('{"name":"bar","tags":[]}');
     });
 
     context('when there is no primary key', function() {
