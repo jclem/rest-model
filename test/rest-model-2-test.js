@@ -37,6 +37,28 @@ describe('RestModelV2', function() {
     post = Post.create();
   });
 
+  describe('.dirtyProperties', function() {
+    context('when no attributes have changed', function() {
+      it('is empty', function() {
+        post.get('dirtyProperties').should.eql([]);
+      });
+    });
+
+    context('when a simple attribute has changed', function() {
+      it('includes that property', function() {
+        post.set('name', 'new-name');
+        post.get('dirtyProperties').should.eql(['name']);
+      });
+    });
+
+    context('when an array attribute has changed', function() {
+      it('includes that property', function() {
+        post.get('tags').pushObject('draft');
+        post.get('dirtyProperties').should.eql(['tags']);
+      });
+    });
+  });
+
   describe('.isClean', function() {
     context('when no attributes have changed', function() {
       it('is true', function() {

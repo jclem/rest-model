@@ -23,38 +23,35 @@ module.exports = Ember.Object.extend({
   init: function() {
     this.setOriginalProperties();
 
-    var isDirty = Ember.computed.apply(Ember, this.get('attrs')
+    var dirtyProperties = Ember.computed.apply(Ember, this.get('attrs')
       .concat(function() {
         var attrNames          = this.get('attrNames');
         var originalProperties = this.get('originalProperties');
-        var key, value, originalValue;
 
-        for (var i = 0; i < attrNames.length; i++) {
-          key           = attrNames[i];
-          value         = this.get(key);
-          originalValue = originalProperties.get(key);
+        return attrNames.reduce(function(changedProperties, key) {
+          var value         = this.get(key);
+          var originalValue = originalProperties.get(key);
 
           if (Em.isArray(value)) {
             if (!utils.arraysEqual(value, originalValue)) {
-              return true;
+              changedProperties.push(key);
             }
           } else if (!Ember.isEqual(value, originalValue)) {
-            return true;
+            changedProperties.push(key);
           }
-        }
 
-        return false;
+          return changedProperties;
+        }.bind(this), []);
       })
     );
 
     /**
-     * If any of the declared properties (`attrs`) of the instance are different
-     * from their original values. The opposite of `isClean`.
+     * A list of the dirty properties on this instance.
      *
-     * @property isDirty
-     * @type {Boolean}
+     * @property dirtyProperties
+     * @type {Array}
      */
-    Ember.defineProperty(this, 'isDirty', isDirty);
+    Ember.defineProperty(this, 'dirtyProperties', dirtyProperties);
   },
 
   /**
@@ -78,7 +75,16 @@ module.exports = Ember.Object.extend({
    * @property isClean
    * @type {Boolean}
    */
-  isClean: Em.computed.not('isDirty'),
+  isClean: Em.computed.empty('dirtyProperties'),
+
+  /**
+   * If any of the declared properties (`attrs`) of the instance are different
+   * from their original values. The opposite of `isClean`.
+   *
+   * @property isDirty
+   * @type {Boolean}
+   */
+  isDirty: Em.computed.notEmpty('dirtyProperties'),
 
   /**
    * Whether or not the record is new (has not been persisted). This property
