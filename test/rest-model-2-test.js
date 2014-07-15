@@ -42,6 +42,17 @@ describe('RestModelV2', function() {
   });
 
   describe('path', function() {
+    context('when a namespace is specified', function() {
+      it('respects the namespace', function() {
+        RestModel
+          .extend()
+          .reopenClass({ namespace: 'foo', base: 'bar' })
+          .create()
+          .get('path')
+          .should.eql('/foo/bar');
+      });
+    });
+
     context('when there is a primary key', function() {
       it('is the base class path with a primary key', function() {
         post.set('id', 1);
