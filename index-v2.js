@@ -196,6 +196,18 @@ module.exports = Ember.Object.extend({
   },
 
   /**
+   * Revert this instance's properties back to their original values.
+   *
+   * @method revert
+   */
+  revert: function() {
+    this.get('attrs').forEach(function(key) {
+      var value = Ember.copy(this.get('originalProperties.%@'.fmt(key)));
+      this.set(key, value);
+    }.bind(this));
+  },
+
+  /**
    * Save this instance. If the instance is new, do a 'POST' request to the
    * class's base path, otherwise, use 'PATCH' to this instance's path.
    *

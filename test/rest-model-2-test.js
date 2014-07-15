@@ -174,6 +174,18 @@ describe('RestModelV2', function() {
     });
   });
 
+  describe('#revert', function() {
+    beforeEach(function() {
+      post = Post.create({ name: 'foo' });
+      post.set('name', 'bar');
+      post.revert();
+    });
+
+    it('reverts back to the original properties', function() {
+      post.get('name').should.eql('foo');
+    });
+  });
+
   describe('#save', function() {
     var args;
 
