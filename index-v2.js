@@ -250,6 +250,10 @@ module.exports = Ember.Object.extend({
    * `inFlight` to `true` while the given function is in flight. When it is
    * resolved or rejected, set those properties to `false`.
    *
+   * TODO: Need to handle the case where the same model performs the same
+   *       operation at the same time, multiple times (e.g. #save and #save
+   *       simultaneously).
+   *
    * @method flight
    * @private
    * @param {String} type the type of flight the instance is entering
