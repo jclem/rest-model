@@ -45,8 +45,8 @@ module.exports = Ember.Object.extend({
     );
 
     /**
-     * Whether or not any of the properties of the instance are different from
-     * their original values.
+     * If any of the declared properties (`attrs`) of the instance are different
+     * from their original values. The opposite of `isClean`.
      *
      * @property isDirty
      * @type {Boolean}
@@ -56,7 +56,7 @@ module.exports = Ember.Object.extend({
 
   /**
    * A declared array of attributes of this class. These are the attributes that
-   * are relied upon for the `isDirty` property.
+   * are relied upon for the `isDirty` property, as well as other functionality.
    *
    * @property attrs
    * @type {Array}
@@ -64,6 +64,15 @@ module.exports = Ember.Object.extend({
   attrs: function() {
     return [];
   }.property(),
+
+  /**
+   * If the declared properties (`attrs`) of the instance are the same as their
+   * original values. The opposite of `isDirty`.
+   *
+   * @property isClean
+   * @type {Boolean}
+   */
+  isClean: Em.computed.not('isDirty'),
 
   /**
    * Whether or not the record is new (has not been persisted). This property

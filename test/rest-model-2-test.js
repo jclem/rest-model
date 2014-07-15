@@ -33,6 +33,21 @@ describe('RestModelV2', function() {
     post = Post.create();
   });
 
+  describe('.isClean', function() {
+    context('when no attributes have changed', function() {
+      it('is true', function() {
+        post.get('isClean').should.be.true;
+      });
+    });
+
+    context('when a simple attribute has changed', function() {
+      it('is false', function() {
+        post.set('name', 'new-name');
+        post.get('isClean').should.be.false;
+      });
+    });
+  });
+
   describe('.isDirty', function() {
     context('when no attributes have changed', function() {
       it('is false', function() {
