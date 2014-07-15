@@ -13,6 +13,59 @@ var utils = require('./lib/utils');
  */
 module.exports = Ember.Object.extend({
   /**
+   * Initialize a new instance of this class. Does so by first setting the
+   * initial properties to the `originalProperties` value and by defining the
+   * `isDirty` property.
+   *
+   * @method init
+   * @private
+   */
+  init: function() {
+    this.setOriginalProperties();
+
+    var isDirty = Ember.computed.apply(Ember, this.get('attrs')
+      .concat(function() {
+        var attrs              = this.get('attrs');
+        var originalProperties = this.get('originalProperties');
+        var key, value, originalValue;
+
+        for (var i = 0; i < attrs.length; i++) {
+          key   = attrs[i];
+          value = this.get(key);
+
+          originalValue = originalProperties.get(key);
+
+          if (!Ember.isEqual(value, originalValue)) {
+            return true;
+          }
+        }
+
+        return false;
+      })
+    );
+
+    /**
+     * Whether or not any of the properties of the instance are different from
+     * their original values.
+     *
+     * @property isDirty
+     * @type {Boolean}
+     */
+    Ember.defineProperty(this, 'isDirty', isDirty);
+  },
+
+  /**
+   * A declared array of attributes of this class. These are the attributes that
+   * are relied upon for the `isDirty` property.
+   *
+   * @property attrs
+   * @type {Array}
+   */
+  attrs: function() {
+    return [];
+  }.property(),
+
+  /**
    * Whether or not the record is new (has not been persisted). This property
    * should almost certainly be overriden.
    *
@@ -169,6 +222,22 @@ module.exports = Ember.Object.extend({
       this.setProperties(data);
       return this;
     }.bind(this));
+  },
+
+  /**
+   * Set an object containing the original values of the instance's properties.
+   *
+   * @method setOriginalProperties
+   * @private
+   */
+  setOriginalProperties: function() {
+    var attrs = this.get('attrs');
+
+    this.set('originalProperties', attrs.reduce(function(properties, key) {
+      var value = this.get(key);
+      properties.set(key, Ember.copy(value, true));
+      return properties;
+    }.bind(this), Ember.Object.create()));
   },
 
   /**

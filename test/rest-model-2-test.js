@@ -1,5 +1,8 @@
 // Allow wrapping IIFEs in parens for testing thrown errors.
 // jshint -W068
+//
+// Allow expressions in place of function calls (for be.true, etc)
+// jshint -W030
 
 'use strict';
 
@@ -13,7 +16,11 @@ describe('RestModelV2', function() {
   before(function() {
     RestModel = require('../index-v2');
 
-    Post = RestModel.extend().reopenClass({
+    Post = RestModel.extend({
+      attrs: function() {
+        return ['name'];
+      }.property()
+    }).reopenClass({
       base: 'posts'
     });
 
@@ -26,17 +33,32 @@ describe('RestModelV2', function() {
     post = Post.create();
   });
 
+  describe('.isDirty', function() {
+    context('when no attributes have changed', function() {
+      it('is false', function() {
+        post.get('isDirty').should.be.false;
+      });
+    });
+
+    context('when a simple attribute has changed', function() {
+      it('is true', function() {
+        post.set('name', 'new-name');
+        post.get('isDirty').should.be.true;
+      });
+    });
+  });
+
   describe('.isNew', function() {
     context('when there is no primary key', function() {
       it('is true', function() {
-        post.get('isNew').should.eql(true);
+        post.get('isNew').should.be.true;
       });
     });
 
     context('when there is a primary key', function() {
       it('is false', function() {
         post.set('id', 1);
-        post.get('isNew').should.eql(false);
+        post.get('isNew').should.be.false;
       });
     });
   });
@@ -168,9 +190,9 @@ describe('RestModelV2', function() {
     });
 
     it('saves with a serialized form of the record', function() {
-      post.set('foo', 'bar');
+      post.set('name', 'bar');
       post.save();
-      jQuery.ajax.lastCall.args[0].data.should.eql('{"foo":"bar"}');
+      jQuery.ajax.lastCall.args[0].data.should.eql('{"name":"bar"}');
     });
 
     context('when there is no primary key', function() {
