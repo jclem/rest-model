@@ -167,6 +167,18 @@ describe('RestModelV2', function() {
         args = jQuery.ajax.lastCall.args;
       });
 
+      it('temporarily sets the isDeleting and inFlight properties', function(done) {
+        this.resolve = {};
+
+        post.delete().then(function() {
+          post.get('isDeleting').should.be.false;
+          post.get('inFlight').should.be.false;
+          done();
+        });
+
+        post.get('isDeleting').should.be.true;
+      });
+
       it('deletes the record with the instance path', function() {
         args[0].url.should.eql(post.get('path'));
       });
@@ -199,6 +211,19 @@ describe('RestModelV2', function() {
         post.fetch();
         args = jQuery.ajax.lastCall.args;
       });
+
+      it('temporarily sets the isFetching and inFlight properties', function(done) {
+        this.resolve = {};
+
+        post.fetch().then(function() {
+          post.get('isFetching').should.be.false;
+          post.get('inFlight').should.be.false;
+          done();
+        });
+
+        post.get('isFetching').should.be.true;
+      });
+
 
       it('fetches the record with the instance path', function() {
         args[0].url.should.eql(post.get('path'));
@@ -257,6 +282,18 @@ describe('RestModelV2', function() {
 
   describe('#save', function() {
     var args;
+
+    it('temporarily sets the isSaving and inFlight properties', function(done) {
+      this.resolve = {};
+
+      post.save().then(function() {
+        post.get('isSaving').should.be.false;
+        post.get('inFlight').should.be.false;
+        done();
+      });
+
+      post.get('isSaving').should.be.true;
+    });
 
     it('updates the record attributes with the response', function() {
       this.resolve = { name: 'Test Post' };

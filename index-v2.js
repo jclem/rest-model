@@ -69,6 +69,15 @@ module.exports = Ember.Object.extend({
   }.property(),
 
   /**
+   * Whether or not the instance is "in flight", meaning that it has AJAX
+   * requests in process.
+   *
+   * @property inFlight
+   * @type {Boolean}
+   */
+  inFlight: Ember.computed.bool('flightPool'),
+
+  /**
    * If the declared properties (`attrs`) of the instance are the same as their
    * original values. The opposite of `isDirty`.
    *
@@ -201,7 +210,7 @@ module.exports = Ember.Object.extend({
       type: 'DELETE'
     }, options);
 
-    return this.constructor.ajax(options);
+    return this.flight('deleting', this.constructor.ajax(options));
   },
 
   /**
@@ -228,9 +237,34 @@ module.exports = Ember.Object.extend({
       type: 'GET'
     }, options);
 
-    return this.constructor.ajax(options).then(function(data) {
-      this.setProperties(data);
-      return this;
+    return this.flight('fetching',
+      this.constructor.ajax(options).then(function(data) {
+        this.setProperties(data);
+        return this;
+      }.bind(this))
+    );
+  },
+
+  /**
+   * Set the given parameter as `is#{parameter.capitalize()}` as well as
+   * `inFlight` to `true` while the given function is in flight. When it is
+   * resolved or rejected, set those properties to `false`.
+   *
+   * @method flight
+   * @private
+   * @param {String} type the type of flight the instance is entering
+   * @param {Ember.RSVP.Promise} promise the promise whose finished state
+   *   removes an item from the flight pool
+   */
+  flight: function(type, promise) {
+    type = 'is%@'.fmt(type.capitalize());
+
+    this.set(type, true);
+    this.incrementProperty('flightPool');
+
+    return promise.finally(function() {
+      this.set(type, false);
+      this.decrementProperty('flightPool');
     }.bind(this));
   },
 
@@ -276,10 +310,12 @@ module.exports = Ember.Object.extend({
       data: this.serialize()
     }, options);
 
-    return this.constructor.ajax(options).then(function(data) {
-      this.setProperties(data);
-      return this;
-    }.bind(this));
+    return this.flight('saving',
+      this.constructor.ajax(options).then(function(data) {
+        this.setProperties(data);
+        return this;
+      }.bind(this))
+    );
   },
 
   /**
