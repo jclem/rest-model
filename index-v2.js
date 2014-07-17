@@ -75,7 +75,7 @@ module.exports = Ember.Object.extend({
    * @property inFlight
    * @type {Boolean}
    */
-  inFlight: Ember.computed.bool('flightPool'),
+  inFlight: Ember.computed.bool('requestPool'),
 
   /**
    * If the declared properties (`attrs`) of the instance are the same as their
@@ -210,7 +210,7 @@ module.exports = Ember.Object.extend({
       type: 'DELETE'
     }, options);
 
-    return this.flight('deleting', this.constructor.ajax(options));
+    return this.request('deleting', this.constructor.ajax(options));
   },
 
   /**
@@ -237,7 +237,7 @@ module.exports = Ember.Object.extend({
       type: 'GET'
     }, options);
 
-    return this.flight('fetching',
+    return this.request('fetching',
       this.constructor.ajax(options).then(function(data) {
         this.setProperties(data);
         return this;
@@ -254,21 +254,21 @@ module.exports = Ember.Object.extend({
    *       operation at the same time, multiple times (e.g. #save and #save
    *       simultaneously).
    *
-   * @method flight
+   * @method request
    * @private
-   * @param {String} type the type of flight the instance is entering
+   * @param {String} type the type of request the instance is entering
    * @param {Ember.RSVP.Promise} promise the promise whose finished state
-   *   removes an item from the flight pool
+   *   removes an item from the request pool
    */
-  flight: function(type, promise) {
+  request: function(type, promise) {
     type = 'is%@'.fmt(type.capitalize());
 
     this.set(type, true);
-    this.incrementProperty('flightPool');
+    this.incrementProperty('requestPool');
 
     return promise.finally(function() {
       this.set(type, false);
-      this.decrementProperty('flightPool');
+      this.decrementProperty('requestPool');
     }.bind(this));
   },
 
@@ -314,7 +314,7 @@ module.exports = Ember.Object.extend({
       data: this.serialize()
     }, options);
 
-    return this.flight('saving',
+    return this.request('saving',
       this.constructor.ajax(options).then(function(data) {
         this.setProperties(data);
         return this;
