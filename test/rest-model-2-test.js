@@ -1,6 +1,6 @@
 // Allow wrapping IIFEs in parens for testing thrown errors.
 // jshint -W068
-//
+
 // Allow expressions in place of function calls (for be.true, etc)
 // jshint -W030
 
@@ -268,7 +268,7 @@ describe('RestModelV2', function() {
 
       Post.reopen({
         change: function() {
-          changed = true
+          changed = true;
         }.observes('tags.[]')
       });
 
