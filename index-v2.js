@@ -1,5 +1,6 @@
 'use strict';
 
+var cache = require('./lib/cache-v2').create();
 var utils = require('./lib/utils');
 
 /**
@@ -32,7 +33,7 @@ module.exports = Ember.Object.extend({
           var value         = this.get(key);
           var originalValue = originalProperties.get(key);
 
-          if (Em.isArray(value)) {
+          if (Ember.isArray(value)) {
             if (!utils.arraysEqual(value, originalValue)) {
               changedProperties.push(key);
             }
@@ -84,7 +85,7 @@ module.exports = Ember.Object.extend({
    * @property isClean
    * @type {Boolean}
    */
-  isClean: Em.computed.empty('dirtyProperties'),
+  isClean: Ember.computed.empty('dirtyProperties'),
 
   /**
    * If any of the declared properties (`attrs`) of the instance are different
@@ -93,7 +94,7 @@ module.exports = Ember.Object.extend({
    * @property isDirty
    * @type {Boolean}
    */
-  isDirty: Em.computed.notEmpty('dirtyProperties'),
+  isDirty: Ember.computed.notEmpty('dirtyProperties'),
 
   /**
    * Whether or not the record is new (has not been persisted). This property
@@ -365,6 +366,16 @@ module.exports = Ember.Object.extend({
   }
 }).reopenClass({
   /**
+   * The lowercase string version of the name of this class, used for caching
+   * purposes. This must be overridden.
+   *
+   * @property typeKey
+   * @static
+   * @type String
+   */
+  typeKey: '',
+
+  /**
    * An array of properties used to fetch and persist records. An array is used
    * because multiple properties may be used as primary keys in an API, e.g.
    * "id" and "name".
@@ -413,13 +424,6 @@ module.exports = Ember.Object.extend({
    * @return {Ember.RSVP.Promise} a promise resolved with an instance or array
    *   of instances of this class, as well as the original response data, once
    *   the request has completed
-   * @example
-   * ```javascript
-   * Post.ajax({
-   *   type: 'POST',
-   *   url : '/custom-url',
-   *   data: { foo: 'bar' }
-   * });
    * ```
    */
   ajax: function(options) {
@@ -472,7 +476,7 @@ module.exports = Ember.Object.extend({
       type: 'GET'
     }, options);
 
-    return this.ajax(options).then(function(data) {
+    return this.request(options).then(function(data) {
       return data.map(function(datum) {
         return this.create(datum);
       }.bind(this));
@@ -611,7 +615,7 @@ module.exports = Ember.Object.extend({
       type: 'GET'
     }, options);
 
-    return this.ajax(options).then(this.create.bind(this));
+    return this.request(options).then(this.create.bind(this));
   },
 
   /**
@@ -647,5 +651,63 @@ module.exports = Ember.Object.extend({
     } else {
       return object.get('primaryKey');
     }
+  },
+
+  /**
+   * Request a given resource. Will use caching if the request is a "GET"
+   * request.
+   *
+   * @method request
+   * @async
+   * @static
+   * @private
+   * @param {Object} options options to pass on to the AJAX request
+   * @return {Ember.RSVP.Promise} a promise resolved with an object or array of
+   *   objects from the cache or AJAX request
+   * @example
+   * ```javascript
+   * Post.request({
+   *   type: 'POST',
+   *   url : '/custom-url',
+   *   data: { foo: 'bar' }
+   * });
+   * ```
+   */
+  request: function(options) {
+    var performCaching = options.type.toLowerCase() === 'get';
+
+    if (performCaching) {
+      return this.requestWithCache(options);
+    } else {
+      return this.ajax(options);
+    }
+  },
+
+  /**
+   * Request a given resource. If the resource is in the cache, resolve with the
+   * cached version. The cached object returned will be updated when a
+   * subsequent AJAX call completes, either by setting properties or by pushing
+   * and deleting objects in the case of an array.
+   *
+   * @method requestWithCache
+   * @async
+   * @static
+   * @private
+   * @param {Object} options options to pass on to the AJAX request
+   * @return {Ember.RSVP.Promise} a promise resolved with an object or array of
+   *   objects from the cache or AJAX request
+   */
+  requestWithCache: function(options) {
+    return cache.getResponse(this, options.url).then(function(cachedValue) {
+      if (cachedValue) {
+        return cachedValue;
+      } else {
+        return this.ajax(options);
+      }
+    }.bind(this)).then(function(response) {
+      return cache.setResponse(this, options.url, response);
+    }.bind(this)).then(function(response) {
+      return response;
+    });
   }
 });

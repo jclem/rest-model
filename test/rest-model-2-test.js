@@ -11,10 +11,11 @@ require('./test-helper');
 var should = require('should');
 
 describe('RestModelV2', function() {
-  var Comment, Post, RestModel, post;
+  var Comment, Post, RestModel, cache, post;
 
   before(function() {
     RestModel = require('../index-v2');
+    cache     = require('../lib/cache-v2').create();
 
     Post = RestModel.extend({
       attrs: function() {
@@ -25,11 +26,13 @@ describe('RestModelV2', function() {
         return [];
       }.property()
     }).reopenClass({
-      base: 'posts'
+      typeKey: 'post',
+      base   : 'posts'
     });
 
     Comment = RestModel.extend().reopenClass({
-      base: 'posts/:post/comments'
+      typeKey: 'comment',
+      base   : 'posts/:post/comments'
     });
   });
 
@@ -489,6 +492,17 @@ describe('RestModelV2', function() {
       this.resolve = { name: 'foo' };
       return Post.find(1).then(function(instance) {
         instance.get('name').should.eql('foo');
+      });
+    });
+
+    it('writes the model to the cache', function() {
+      var attrs    = { id: 1, name: 'name' };
+      this.resolve = attrs;
+
+      return Post.find(1).then(function() {
+        return cache.getResponse(Post, '/posts/1').then(function(response) {
+          response.should.eql(attrs);
+        });
       });
     });
 
