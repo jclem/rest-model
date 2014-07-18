@@ -173,6 +173,18 @@ describe('RestModel.V2', function() {
         args = jQuery.ajax.lastCall.args;
       });
 
+      it('removes the record from the cache', function() {
+        this.resolve = { id: 1, name: 'post' };
+
+        return Post.find(1).then(function() {
+          return post.delete();
+        }).then(function() {
+          return cache.getItem('post: 1');
+        }).then(function(cached) {
+          should(cached).be.null;
+        });
+      });
+
       it('temporarily sets the isDeleting and inFlight properties', function(done) {
         this.resolve = {};
 

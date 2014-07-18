@@ -23,6 +23,10 @@ before(function(done) {
         return value;
       },
 
+      removeItem: function(key) {
+        delete this._cache[key];
+      },
+
       clear: function() {
         this._cache = {};
       }

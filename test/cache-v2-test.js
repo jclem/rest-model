@@ -20,6 +20,49 @@ describe('CacheV2', function() {
     });
   });
 
+  describe('#updateRecord', function() {
+    var post;
+
+    beforeEach(function() {
+      post = { id: 1, name: 'name' };
+      setLocalStorage('/posts/1', post);
+    });
+
+    it('updates an existing record in the cache', function() {
+      var postRecord = Post.create({ id: 1 });
+
+      return cache.updateRecord(postRecord, {
+        id  : 1,
+        name: 'new-name'
+      }).then(function() {
+        return cache.getItem('post: 1');
+      }).then(function(item) {
+        item.should.eql({ id: 1, name: 'new-name' });
+      });
+    });
+  });
+
+  describe('#removeRecord', function() {
+    var post;
+
+    beforeEach(function() {
+      post = { id: 1, name: 'name' };
+      setLocalStorage('/posts/1', post);
+    });
+
+    it('removes the record from the cache', function() {
+      var postRecord = Post.create({ id: 1 });
+
+      return cache.setItem('post: 1', post).then(function() {
+        return cache.removeRecord(postRecord);
+      }).then(function() {
+        return cache.getItem('post: 1');
+      }).then(function(item) {
+        should(item).be.null;
+      });
+    });
+  });
+
   describe('#getResponse', function() {
     var attrs;
 
@@ -41,6 +84,19 @@ describe('CacheV2', function() {
 
         return cache.getResponse(Post, '/posts').then(function(res) {
           res.should.eql([attrs]);
+        });
+      });
+
+      context('and there are null values in the array', function() {
+        it('does not include the null values', function() {
+          attrs = [{ id: 1, name: 'name-1' }, { id: 2, name: 'new-name' }];
+          setLocalStorage('/posts', attrs);
+
+          return cache.removeItem('post: 2').then(function() {
+            return cache.getResponse(Post, '/posts');
+          }).then(function(res) {
+            res.should.eql([{ id: 1, name: 'name-1' }]);
+          });
         });
       });
     });

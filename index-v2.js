@@ -211,7 +211,11 @@ module.exports = Ember.Object.extend({
       type: 'DELETE'
     }, options);
 
-    return this.request('deleting', this.constructor.ajax(options));
+    return this.request('deleting',
+      this.constructor.ajax(options).then(function() {
+        return cache.removeRecord(this);
+      }.bind(this))
+    );
   },
 
   /**
