@@ -410,6 +410,16 @@ module.exports = Ember.Object.extend({
   base: '',
 
   /**
+   * Whether or not to cache GET calls when using the `::request` method.
+   *
+   * @property cache
+   * @static
+   * @type Boolean
+   * @default false
+   */
+  cache: false,
+
+  /**
    * Perform an AJAX request.
    *
    * @method ajax
@@ -705,7 +715,7 @@ module.exports = Ember.Object.extend({
    * ```
    */
   request: function(options, processingOptions) {
-    var performCaching = options.type.toLowerCase() === 'get';
+    var performCaching = this.cache && options.type.toLowerCase() === 'get';
 
     processingOptions = utils.extend({
       toResult   : this.toResult.bind(this)

@@ -28,7 +28,8 @@ describe('RestModelV2', function() {
       }.property()
     }).reopenClass({
       typeKey: 'post',
-      base   : 'posts'
+      base   : 'posts',
+      cache  : true
     });
 
     Comment = RestModel.extend().reopenClass({
@@ -557,6 +558,27 @@ describe('RestModelV2', function() {
     });
 
     context('when it is a GET request', function() {
+      context('and caching is not enabled', function() {
+        var cacheSpy;
+
+        beforeEach(function() {
+          this.resolve = [{ id: 1 }];
+          cacheSpy = sinon.spy(RestModel, 'requestWithCache');
+
+          return RestModel.request({
+            type: 'GET'
+          });
+        });
+
+        afterEach(function() {
+          cacheSpy.restore();
+        });
+
+        it('does not perform caching', function() {
+          cacheSpy.callCount.should.eql(0);
+        });
+      });
+
       context('and the request is not cached', function() {
         var cacheSpy;
 
