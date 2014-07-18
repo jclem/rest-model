@@ -206,16 +206,16 @@ module.exports = Ember.Object.extend({
       throw new Error('Can not delete a record with no primary key.');
     }
 
-    options = utils.extend({
-      url : this.get('path'),
-      type: 'DELETE'
-    }, options);
+    return this.request('deleting', function() {
+      options = utils.extend({
+        url : this.get('path'),
+        type: 'DELETE'
+      }, options);
 
-    return this.request('deleting',
-      this.constructor.ajax(options).then(function() {
+      return this.constructor.ajax(options).then(function() {
         return cache.removeRecord(this);
-      }.bind(this))
-    );
+      }.bind(this));
+    }.bind(this));
   },
 
   /**
@@ -237,17 +237,17 @@ module.exports = Ember.Object.extend({
       throw new Error('Can not fetch a record with no primary key.');
     }
 
-    options = utils.extend({
-      url : this.get('path'),
-      type: 'GET'
-    }, options);
+    return this.request('fetching', function() {
+      options = utils.extend({
+        url : this.get('path'),
+        type: 'GET'
+      }, options);
 
-    return this.request('fetching',
-      this.constructor.ajax(options).then(function(data) {
+      return this.constructor.ajax(options).then(function(data) {
         this.setProperties(data);
         return this;
-      }.bind(this))
-    );
+      }.bind(this));
+    }.bind(this));
   },
 
   /**
@@ -275,16 +275,16 @@ module.exports = Ember.Object.extend({
    * @method request
    * @private
    * @param {String} type the type of request the instance is entering
-   * @param {Ember.RSVP.Promise} promise the promise whose finished state
-   *   removes an item from the request pool
+   * @param {Function} doRequest a function returning a promise whose finished
+   *   state removes an item from the request pool
    */
-  request: function(type, promise) {
+  request: function(type, doRequest) {
     type = 'is%@'.fmt(type.capitalize());
 
     this.set(type, true);
     this.incrementProperty('requestPool');
 
-    return promise.finally(function() {
+    return doRequest().finally(function() {
       this.set(type, false);
       this.decrementProperty('requestPool');
     }.bind(this));
@@ -326,19 +326,19 @@ module.exports = Ember.Object.extend({
   save: function(options) {
     var type = this.get('isNew') ? 'POST' : 'PATCH';
 
-    options = utils.extend({
-      url : this.get('path'),
-      type: type,
-      data: this.serialize()
-    }, options);
+    return this.request('saving', function() {
+      options = utils.extend({
+        url : this.get('path'),
+        type: type,
+        data: this.serialize()
+      }, options);
 
-    return this.request('saving',
-      this.constructor.ajax(options).then(function(data) {
+      return this.constructor.ajax(options).then(function(data) {
         return this.persistToCache(data);
       }.bind(this)).then(function(data) {
         return this.setProperties(data);
       }.bind(this))
-    );
+    }.bind(this));
   },
 
   /**
