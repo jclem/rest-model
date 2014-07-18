@@ -27,9 +27,10 @@ describe('RestModel.V2', function() {
         return [];
       }.property()
     }).reopenClass({
-      typeKey: 'post',
-      base   : 'posts',
-      cache  : true
+      primaryKeys: ['id'],
+      typeKey    : 'post',
+      base       : 'posts',
+      cache      : true
     });
 
     Comment = RestModel.extend().reopenClass({
@@ -288,40 +289,58 @@ describe('RestModel.V2', function() {
   describe('#save', function() {
     var args;
 
+    beforeEach(function() {
+      this.resolve = { id: 1, name: 'Test Post' };
+    });
+
     it('temporarily sets the isSaving and inFlight properties', function(done) {
-      this.resolve = {};
+      this.resolve = { id: 1 };
 
       post.save().then(function() {
         post.get('isSaving').should.be.false;
         post.get('inFlight').should.be.false;
-        done();
-      });
+      }).then(done);
 
       post.get('isSaving').should.be.true;
     });
 
     it('updates the record attributes with the response', function() {
       this.resolve = { name: 'Test Post' };
+
       return post.save().then(function() {
         post.get('name').should.eql('Test Post');
       });
     });
 
+    it('updates the cached representation of the record', function() {
+      this.resolve = { id: 1, name: 'Test Post' };
+
+      return post.save().then(function() {
+        return cache.getItem('post: 1').then(function(item) {
+          item.should.eql({ id: 1, name: 'Test Post' });
+        });
+      });
+    });
+
     it('accepts custom options', function() {
-      post.save({ url: '/posts/custom-path' });
-      jQuery.ajax.lastCall.args[0].url.should.eql('/posts/custom-path');
+      return post.save({ url: '/posts/custom-path' }).then(function() {
+        jQuery.ajax.lastCall.args[0].url.should.eql('/posts/custom-path');
+      });
     });
 
     it('saves with a serialized form of the record', function() {
       post.set('name', 'bar');
-      post.save();
-      jQuery.ajax.lastCall.args[0].data.should.eql('{"name":"bar","tags":[]}');
+
+      return post.save().then(function() {
+        jQuery.ajax.lastCall.args[0].data.should.eql('{"name":"bar","tags":[]}');
+      });
     });
 
     context('when there is no primary key', function() {
       beforeEach(function() {
-        post.save();
-        args = jQuery.ajax.lastCall.args;
+        return post.save().then(function() {
+          args = jQuery.ajax.lastCall.args;
+        });
       });
 
       it('saves with a POST', function() {
@@ -336,8 +355,10 @@ describe('RestModel.V2', function() {
     context('when there is a primary key', function() {
       beforeEach(function() {
         post.set('id', 1);
-        post.save();
-        args = jQuery.ajax.lastCall.args;
+
+        return post.save().then(function() {
+          args = jQuery.ajax.lastCall.args;
+        });
       });
 
       it('saves the record with the instance path', function() {

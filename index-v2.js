@@ -247,6 +247,19 @@ module.exports = Ember.Object.extend({
   },
 
   /**
+   * Persist the given data for this item to the cache.
+   *
+   * @method persistToCache
+   * @async
+   * @private
+   * @param {Object} data the data to be written to the cache
+   * @return {Ember.RSVP.Promise} a promise resolved with the written data
+   */
+  persistToCache: function(data) {
+    return cache.updateRecord(this, data);
+  },
+
+  /**
    * Set the given parameter as `is#{parameter.capitalize()}` as well as
    * `inFlight` to `true` while the given function is in flight. When it is
    * resolved or rejected, set those properties to `false`.
@@ -317,8 +330,9 @@ module.exports = Ember.Object.extend({
 
     return this.request('saving',
       this.constructor.ajax(options).then(function(data) {
-        this.setProperties(data);
-        return this;
+        return this.persistToCache(data);
+      }.bind(this)).then(function(data) {
+        return this.setProperties(data);
       }.bind(this))
     );
   },
@@ -715,13 +729,13 @@ module.exports = Ember.Object.extend({
    * ```
    */
   request: function(options, processingOptions) {
-    var performCaching = this.cache && options.type.toLowerCase() === 'get';
+    var readFromCache = this.cache && options.type.toLowerCase() === 'get';
 
     processingOptions = utils.extend({
       toResult   : this.toResult.bind(this)
     }, processingOptions);
 
-    if (performCaching) {
+    if (readFromCache) {
       return this.requestWithCache(options, processingOptions);
     } else {
       return this.ajax(options).then(function(response) {
