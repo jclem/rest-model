@@ -713,7 +713,9 @@ module.exports = Ember.Object.extend({
     if (performCaching) {
       return this.requestWithCache(options, processingOptions);
     } else {
-      return this.ajax(options);
+      return this.ajax(options).then(function(response) {
+        return processingOptions.toResult(response);
+      });
     }
   },
 
