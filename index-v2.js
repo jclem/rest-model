@@ -706,10 +706,6 @@ module.exports = Ember.Object.extend({
    * Request a given resource. Will use caching if the request is a "GET"
    * request.
    *
-   * TODO: `::request` (including its name) and all of the functionality around
-   *       it is extremely rough. This definitely must be resolved before v2
-   *       ships.
-   *
    * @method request
    * @async
    * @static
