@@ -48,17 +48,23 @@ describe('RestModel.Cache', function() {
       var cacheContent;
 
       beforeEach(function() {
-        cacheContent = [{ id: 1, content: 'content' }];
+        cacheContent = [{ id: 1, content: 'content' }, { id: 2, content: 'content-2' }];
+        cache.update(Post, '/posts', cacheContent);
+        cacheContent = [{ id: 1, content: 'new-content' }, { id: 2, content: 'content-2' }];
         cache.update(Post, '/posts', cacheContent);
       });
 
       it('adds the primary keys to the cache', function() {
-        localStorage.getItem('/posts').should.eql('[1]')
+        localStorage.getItem('/posts').should.eql('[1,2]')
       });
 
       it('adds the records to the class store', function() {
         var expected = JSON.stringify(cacheContent);
         localStorage.getItem('Post').should.eql(expected);
+      });
+
+      it('updates existing records in the class store', function() {
+        JSON.parse(localStorage.getItem('Post'))[0].content.should.eql('new-content');
       });
 
       it('does not duplicate records', function() {
