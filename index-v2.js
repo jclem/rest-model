@@ -715,8 +715,6 @@ module.exports = Ember.Object.extend({
    * @param {Function} [processingOptions.toResult=RestModel.toResult] a
    *   function used to convert the response body into an instance or array of
    *   instances of RestModel
-   * @param {Function} [getResult] a function used to turn the
-   *   response body into an instance or array of instances of RestModel
    * @return {Ember.RSVP.Promise} a promise resolved with an instance or array
    *   of instances from the cache or AJAX request
    * @example
