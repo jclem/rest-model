@@ -691,9 +691,6 @@ module.exports = Ember.Object.extend({
    * @param {Function} [processingOptions.toResult=RestModel.toResult] a
    *   function used to convert the response body into an instance or array of
    *   instances of RestModel
-   * @param {Function} [processingOptions.afterUpdate=Ember.K] a function called
-   *   when the value the promise was originally with has been updated after an
-   *   AJAX request. This is primarily a testing hook.
    * @param {Function} [getResult] a function used to turn the
    *   response body into an instance or array of instances of RestModel
    * @return {Ember.RSVP.Promise} a promise resolved with an instance or array
@@ -711,8 +708,7 @@ module.exports = Ember.Object.extend({
     var performCaching = options.type.toLowerCase() === 'get';
 
     processingOptions = utils.extend({
-      toResult   : this.toResult.bind(this),
-      afterUpdate: Ember.K
+      toResult   : this.toResult.bind(this)
     }, processingOptions);
 
     if (performCaching) {
@@ -750,11 +746,7 @@ module.exports = Ember.Object.extend({
 
       if (cachedValue) {
         result = processingOptions.toResult(cachedValue);
-
-        this.ajaxAndUpdateCache(options, result).then(function() {
-          processingOptions.afterUpdate();
-        });
-
+        this.ajaxAndUpdateCache(options, result);
         return result;
       } else {
         return this.ajaxAndUpdateCache(options).then(function(response) {
