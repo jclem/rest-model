@@ -476,11 +476,7 @@ module.exports = Ember.Object.extend({
       type: 'GET'
     }, options);
 
-    return this.request(options).then(function(data) {
-      return data.map(function(datum) {
-        return this.create(datum);
-      }.bind(this));
-    }.bind(this));
+    return this.request(options);
   },
 
   /**
@@ -654,16 +650,45 @@ module.exports = Ember.Object.extend({
   },
 
   /**
+   * Transform results from an API request into an instance or array of
+   * instances of this class.
+   *
+   * @method toResult
+   * @static
+   * @private
+   * @param {Array,Object} response an object or array of objects
+   * @return {Array,RestModel} an instance or array of instances of this class
+   */
+  toResult: function(response) {
+    if (Ember.isArray(response)) {
+      return response.map(function(item) {
+        return this.create(item);
+      }.bind(this));
+    } else {
+      return this.create(response);
+    }
+  },
+
+  /**
    * Request a given resource. Will use caching if the request is a "GET"
    * request.
    *
    * @method request
    * @async
    * @static
-   * @private
    * @param {Object} options options to pass on to the AJAX request
-   * @return {Ember.RSVP.Promise} a promise resolved with an object or array of
-   *   objects from the cache or AJAX request
+   * @param {Object} [processingOptions] options that control how the
+   *   deserialized response is processed
+   * @param {Function} [processingOptions.toResult=RestModel.toResult] a
+   *   function used to convert the response body into an instance or array of
+   *   instances of RestModel
+   * @param {Function} [processingOptions.afterUpdate=Ember.K] a function called
+   *   when the value the promise was originally with has been updated after an
+   *   AJAX request. This is primarily a testing hook.
+   * @param {Function} [getResult] a function used to turn the
+   *   response body into an instance or array of instances of RestModel
+   * @return {Ember.RSVP.Promise} a promise resolved with an instance or array
+   *   of instances from the cache or AJAX request
    * @example
    * ```javascript
    * Post.request({
@@ -673,11 +698,16 @@ module.exports = Ember.Object.extend({
    * });
    * ```
    */
-  request: function(options) {
+  request: function(options, processingOptions) {
     var performCaching = options.type.toLowerCase() === 'get';
 
+    processingOptions = utils.extend({
+      toResult   : this.toResult.bind(this),
+      afterUpdate: Ember.K
+    }, processingOptions);
+
     if (performCaching) {
-      return this.requestWithCache(options);
+      return this.requestWithCache(options, processingOptions);
     } else {
       return this.ajax(options);
     }
@@ -694,20 +724,110 @@ module.exports = Ember.Object.extend({
    * @static
    * @private
    * @param {Object} options options to pass on to the AJAX request
+   * @param {Object} [processingOptions] options that control how the
+   *   deserialized response is processed
    * @return {Ember.RSVP.Promise} a promise resolved with an object or array of
    *   objects from the cache or AJAX request
    */
-  requestWithCache: function(options) {
-    return cache.getResponse(this, options.url).then(function(cachedValue) {
+  requestWithCache: function(options, processingOptions) {
+    var cachedValue;
+
+    return cache.getResponse(this, options.url).then(function(_cachedValue) {
+      var result;
+
+      cachedValue = _cachedValue;
+
       if (cachedValue) {
-        return cachedValue;
+        result = processingOptions.toResult(cachedValue);
+
+        this.ajaxAndUpdateCache(options, result).then(function() {
+          processingOptions.afterUpdate();
+        });
+
+        return result;
       } else {
-        return this.ajax(options);
+        return this.ajaxAndUpdateCache(options).then(function(response) {
+          return processingOptions.toResult(response);
+        });
       }
-    }.bind(this)).then(function(response) {
-      return cache.setResponse(this, options.url, response);
     }.bind(this)).then(function(response) {
       return response;
     });
+  },
+
+  /**
+   * Perform an AJAX request, update its value in the cache, and if given a
+   * `cachedValue`, update it in a KVO-friendly way.
+   *
+   * @method ajaxAndUpdateCache
+   * @async
+   * @static
+   * @private
+   * @param {Object} options options to pass on to the AJAX request
+   * @param {Array,Object} result a cached result that will be updated with new
+   *   objects or properties from the AJAX request
+   * @return {Ember.RSVP.Promise} a promise resolved with the newly updated
+   *   cached value
+   */
+  ajaxAndUpdateCache: function(options, result) {
+    return this.ajax(options).then(function(response) {
+      return cache.setResponse(this, options.url, response);
+    }.bind(this)).then(function(response) {
+      if (result) {
+        if (Ember.isArray(response)) {
+          return this.updateCachedArray(result, response);
+        } else {
+          return this.updateCachedObject(result, response);
+        }
+      } else {
+        return response;
+      }
+    }.bind(this));
+  },
+
+  /**
+   * Update a cached array of objects. Add new objects, remove deleted objects,
+   * and update existing objects.
+   *
+   * @method updateCachedArray
+   * @async
+   * @static
+   * @private
+   * @param {Array} result the array of RestModel instances to be updated
+   * @param {Array} newArray the new values to update the cached array with
+   * @return {Ember.RSVP.Promise} a promise resolved with the newly updated
+   *   cached array
+   */
+  updateCachedArray: function(result, newArray) {
+    var newRecords     = utils.findNotIn(newArray, result, this);
+    var removedRecords = utils.findNotIn(result, newArray, this);
+    var updatedRecords = utils.findIn(result, newArray, this);
+
+    result.pushObjects(newRecords);
+    result.removeObjects(removedRecords);
+
+    updatedRecords.forEach(function(record) {
+      var newProperties = utils.findMatching(record, this, newArray);
+      record.setProperties(newProperties);
+    }.bind(this));
+
+    return result;
+  },
+
+  /**
+   * Update a cached object by setting its new properties.
+   *
+   * @method updateCachedObject
+   * @async
+   * @static
+   * @private
+   * @param {Array} cachedObject the object to be updated
+   * @param {Array} newProperties the new properties to update the cached object
+   *   with
+   * @return {Ember.RSVP.Promise} a promise resolved with the newly updated
+   *   cached object
+   */
+  updateCachedObject: function(result, newProperties) {
+    return result.setProperties(newProperties);
   }
 });
