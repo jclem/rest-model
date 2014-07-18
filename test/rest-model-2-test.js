@@ -604,22 +604,21 @@ describe('RestModelV2', function() {
             return Post.request({
               type: 'GET',
               url : '/posts'
-            }, { afterUpdate: done }).then(function(result) {
+            }).then(function(result) {
               result.mapBy('name').should.eql(['name-1', 'name-2']);
+              Ember.run.later(done, 5);
             });
           });
 
           it('updates the array after the request', function(done) {
-            var result;
-
             return Post.request({
               type: 'GET',
               url : '/posts'
-            }, { afterUpdate: function() {
-              result.mapBy('name').should.eql(['new-name-1', 'name-3']);
-              done();
-            } }).then(function(_result) {
-              result = _result;
+            }).then(function(result) {
+              Ember.run.later(function() {
+                result.mapBy('name').should.eql(['new-name-1', 'name-3']);
+                done();
+              }, 5);
             });
           });
         });
@@ -643,22 +642,21 @@ describe('RestModelV2', function() {
             return Post.request({
               type: 'GET',
               url : '/posts/1'
-            }, { afterUpdate: done }).then(function(result) {
+            }).then(function(result) {
               result.get('name').should.eql(originalResponse.name);
+              Ember.run.later(done, 5);
             });
           });
 
           it('updates the cached object', function(done) {
-            var result;
-
             return Post.request({
               type: 'GET',
               url : '/posts/1'
-            }, { afterUpdate: function() {
-              result.get('name').should.eql('new-name');
-              done();
-            } }).then(function(_result) {
-              result = _result;
+            }).then(function(result) {
+              Ember.run.later(function() {
+                result.get('name').should.eql('new-name');
+                done();
+              }, 5);
             });
           });
         });

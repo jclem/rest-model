@@ -437,16 +437,21 @@ module.exports = Ember.Object.extend({
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
       Ember.$.ajax(ajaxOptions).then(function(data) {
-        if (Ember.isArray(data)) {
-          data = this.deserializeArray(data);
-        } else {
-          data = this.deserialize(data);
-        }
+        Ember.run.scheduleOnce('afterRender', function() {
+          if (Ember.isArray(data)) {
+            data = this.deserializeArray(data);
+          } else {
+            data = this.deserialize(data);
+          }
 
-        resolve(data);
+          resolve(data);
+        }.bind(this));
       }.bind(this), function(jqXHR) {
         delete jqXHR.then;
-        reject(jqXHR);
+
+        Ember.run.scheduleOnce('afterRender', function() {
+          reject(jqXHR);
+        });
       });
     }.bind(this));
   },
