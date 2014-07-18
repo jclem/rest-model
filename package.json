@@ -35,6 +35,7 @@
       "afterEach": false,
       "before": false,
       "beforeEach": false,
+      "context": false,
       "describe": false,
       "exports": false,
       "global": false,

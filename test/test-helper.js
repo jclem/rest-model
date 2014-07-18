@@ -2,7 +2,8 @@
 
 var benv  = require('benv');
 var sinon = require('sinon');
-var cache = {};
+
+global.context = describe;
 
 before(function(done) {
   benv.setup(function() {
@@ -11,13 +12,23 @@ before(function(done) {
     global.Handlebars   = benv.require('../bower_components/handlebars/handlebars.min.js', 'Handlebars');
     global.Ember        = benv.require('../bower_components/ember/ember.min.js', 'Ember');
     global.localStorage = {
+      _cache: {},
+
       getItem: function(key) {
-        return cache[key];
+        return this._cache[key];
       },
 
       setItem: function(key, value) {
-        cache[key] = value;
+        this._cache[key] = value;
         return value;
+      },
+
+      removeItem: function(key) {
+        delete this._cache[key];
+      },
+
+      clear: function() {
+        this._cache = {};
       }
     };
 
@@ -26,6 +37,8 @@ before(function(done) {
 });
 
 beforeEach(function() {
+  localStorage.clear();
+
   var self = this;
 
   this.resolve = null;
@@ -49,8 +62,4 @@ beforeEach(function() {
       }
     }
   });
-});
-
-afterEach(function() {
-  cache = {};
 });
