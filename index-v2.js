@@ -7,7 +7,7 @@ var utils = require('./lib/utils');
  * Provides a suite of functionality around interacting with a resource on the
  * web using AJAX requests.
  *
- * @class RestModelV2
+ * @class RestModel.V2
  * @extends Ember.Object
  * @constructor
  * @param {Object} attributes the attributes to initialize the instance with

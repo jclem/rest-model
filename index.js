@@ -27,7 +27,7 @@ var utils = require('./lib/utils');
  * @param {Object} attribtues the attributes set as the original properties on
  *   this instance
  */
-var RestModel = Ember.Object.extend({
+var RestModel = module.exports = Ember.Object.extend({
   /**
    * Called when an API request returns with a non-successful status code. This
    * no-op function can be used to set errors on the record.
@@ -827,6 +827,4 @@ var RestModel = Ember.Object.extend({
   }
 });
 
-if (typeof require === 'function' && module) {
-  module.exports = RestModel;
-}
+RestModel.V2 = require('./index-v2');

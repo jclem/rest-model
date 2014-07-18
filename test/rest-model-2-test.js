@@ -11,11 +11,11 @@ require('./test-helper');
 var should = require('should');
 var sinon  = require('sinon');
 
-describe('RestModelV2', function() {
+describe('RestModel.V2', function() {
   var Comment, Post, RestModel, cache, post;
 
   before(function() {
-    RestModel = require('../index-v2');
+    RestModel = require('../index').V2;
     cache     = require('../lib/cache-v2').create();
 
     Post = RestModel.extend({
