@@ -1298,21 +1298,16 @@ module.exports = Ember.Object.extend({
 
     return new Ember.RSVP.Promise(function(resolve, reject) {
       Ember.$.ajax(ajaxOptions).then(function(data) {
-        Ember.run.scheduleOnce('afterRender', function() {
-          if (Ember.isArray(data)) {
-            data = this.deserializeArray(data);
-          } else {
-            data = this.deserialize(data);
-          }
+        if (Ember.isArray(data)) {
+          data = this.deserializeArray(data);
+        } else {
+          data = this.deserialize(data);
+        }
 
-          resolve(data);
-        }.bind(this));
+        resolve(data);
       }.bind(this), function(jqXHR) {
         delete jqXHR.then;
-
-        Ember.run.scheduleOnce('afterRender', function() {
-          reject(jqXHR);
-        });
+        reject(jqXHR);
       });
     }.bind(this));
   },
@@ -1539,10 +1534,6 @@ module.exports = Ember.Object.extend({
    * Request a given resource. Will use caching if the request is a "GET"
    * request.
    *
-   * TODO: `::request` (including its name) and all of the functionality around
-   *       it is extremely rough. This definitely must be resolved before v2
-   *       ships.
-   *
    * @method request
    * @async
    * @static
@@ -1552,8 +1543,6 @@ module.exports = Ember.Object.extend({
    * @param {Function} [processingOptions.toResult=RestModel.toResult] a
    *   function used to convert the response body into an instance or array of
    *   instances of RestModel
-   * @param {Function} [getResult] a function used to turn the
-   *   response body into an instance or array of instances of RestModel
    * @return {Ember.RSVP.Promise} a promise resolved with an instance or array
    *   of instances from the cache or AJAX request
    * @example
@@ -1889,10 +1878,8 @@ module.exports = Ember.Object.extend({
    */
   getItem: function(key) {
     return new Ember.RSVP.Promise(function(resolve) {
-      Ember.run.scheduleOnce('afterRender', function() {
-        var value = localStorage.getItem(key) || null;
-        resolve(JSON.parse(value));
-      });
+      var value = localStorage.getItem(key) || null;
+      resolve(JSON.parse(value));
     });
   },
 
@@ -1909,11 +1896,9 @@ module.exports = Ember.Object.extend({
    */
   setItem: function(key, value) {
     return new Ember.RSVP.Promise(function(resolve) {
-      Ember.run.scheduleOnce('afterRender', function() {
-        var stringValue = JSON.stringify(value);
-        localStorage.setItem(key, stringValue);
-        resolve(value);
-      });
+      var stringValue = JSON.stringify(value);
+      localStorage.setItem(key, stringValue);
+      resolve(value);
     });
   },
 
@@ -1929,10 +1914,8 @@ module.exports = Ember.Object.extend({
    */
   removeItem: function(key) {
     return new Ember.RSVP.Promise(function(resolve) {
-      Ember.run.scheduleOnce('afterRender', function() {
-        localStorage.removeItem(key);
-        resolve();
-      });
+      localStorage.removeItem(key);
+      resolve();
     });
   }
 });
