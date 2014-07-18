@@ -1039,12 +1039,16 @@ module.exports = Ember.Object.extend({
       throw new Error('Can not delete a record with no primary key.');
     }
 
-    options = utils.extend({
-      url : this.get('path'),
-      type: 'DELETE'
-    }, options);
+    return this.request('deleting', function() {
+      options = utils.extend({
+        url : this.get('path'),
+        type: 'DELETE'
+      }, options);
 
-    return this.request('deleting', this.constructor.ajax(options));
+      return this.constructor.ajax(options).then(function() {
+        return cache.removeRecord(this);
+      }.bind(this));
+    }.bind(this));
   },
 
   /**
@@ -1066,17 +1070,30 @@ module.exports = Ember.Object.extend({
       throw new Error('Can not fetch a record with no primary key.');
     }
 
-    options = utils.extend({
-      url : this.get('path'),
-      type: 'GET'
-    }, options);
+    return this.request('fetching', function() {
+      options = utils.extend({
+        url : this.get('path'),
+        type: 'GET'
+      }, options);
 
-    return this.request('fetching',
-      this.constructor.ajax(options).then(function(data) {
+      return this.constructor.ajax(options).then(function(data) {
         this.setProperties(data);
         return this;
-      }.bind(this))
-    );
+      }.bind(this));
+    }.bind(this));
+  },
+
+  /**
+   * Persist the given data for this item to the cache.
+   *
+   * @method persistToCache
+   * @async
+   * @private
+   * @param {Object} data the data to be written to the cache
+   * @return {Ember.RSVP.Promise} a promise resolved with the written data
+   */
+  persistToCache: function(data) {
+    return cache.updateRecord(this, data);
   },
 
   /**
@@ -1091,16 +1108,16 @@ module.exports = Ember.Object.extend({
    * @method request
    * @private
    * @param {String} type the type of request the instance is entering
-   * @param {Ember.RSVP.Promise} promise the promise whose finished state
-   *   removes an item from the request pool
+   * @param {Function} doRequest a function returning a promise whose finished
+   *   state removes an item from the request pool
    */
-  request: function(type, promise) {
+  request: function(type, doRequest) {
     type = 'is%@'.fmt(type.capitalize());
 
     this.set(type, true);
     this.incrementProperty('requestPool');
 
-    return promise.finally(function() {
+    return doRequest().finally(function() {
       this.set(type, false);
       this.decrementProperty('requestPool');
     }.bind(this));
@@ -1142,18 +1159,19 @@ module.exports = Ember.Object.extend({
   save: function(options) {
     var type = this.get('isNew') ? 'POST' : 'PATCH';
 
-    options = utils.extend({
-      url : this.get('path'),
-      type: type,
-      data: this.serialize()
-    }, options);
+    return this.request('saving', function() {
+      options = utils.extend({
+        url : this.get('path'),
+        type: type,
+        data: this.serialize()
+      }, options);
 
-    return this.request('saving',
-      this.constructor.ajax(options).then(function(data) {
-        this.setProperties(data);
-        return this;
+      return this.constructor.ajax(options).then(function(data) {
+        return this.persistToCache(data);
+      }.bind(this)).then(function(data) {
+        return this.setProperties(data);
       }.bind(this))
-    );
+    }.bind(this));
   },
 
   /**
@@ -1548,13 +1566,13 @@ module.exports = Ember.Object.extend({
    * ```
    */
   request: function(options, processingOptions) {
-    var performCaching = this.cache && options.type.toLowerCase() === 'get';
+    var readFromCache = this.cache && options.type.toLowerCase() === 'get';
 
     processingOptions = utils.extend({
       toResult   : this.toResult.bind(this)
     }, processingOptions);
 
-    if (performCaching) {
+    if (readFromCache) {
       return this.requestWithCache(options, processingOptions);
     } else {
       return this.ajax(options).then(function(response) {
@@ -1721,7 +1739,9 @@ module.exports = Ember.Object.extend({
     return Ember.RSVP.all(keys.map(function(key) {
       var cacheKey = this.getCacheKey(klass.typeKey, key);
       return this.getItem(cacheKey);
-    }.bind(this)));
+    }.bind(this))).then(function(response) {
+      return response.compact();
+    });
   },
 
   /**
@@ -1812,6 +1832,39 @@ module.exports = Ember.Object.extend({
   },
 
   /**
+   * Remove the given record from the cache.
+   *
+   * @method removeRecord
+   * @async
+   * @param {RestModel} record the record to be removed from the cache
+   * @return {Ember.RSVP.Promise} a promise resolved when the record is removed
+   */
+  removeRecord: function(record) {
+    var typeKey    = record.constructor.typeKey;
+    var primaryKey = record.get(record.constructor.primaryKeys[0]);
+    var key        = this.getCacheKey(typeKey, primaryKey);
+
+    return this.removeItem(key);
+  },
+
+  /**
+   * Replace the the given record's cached data with the given data.
+   *
+   * @method updateRecord
+   * @async
+   * @param {RestModel} record the record to be updated in the cache
+   * @param {Object} data the data to be written to the cache
+   * @return {Ember.RSVP.Promise} a promise resolved with the data written
+   */
+  updateRecord: function(record, data) {
+    var primaryKeyName = record.constructor.primaryKeys[0];
+    var primaryKey     = record.get(primaryKeyName) || data[primaryKeyName];
+    var cacheKey       = this.getCacheKey(record.constructor.typeKey, primaryKey);
+
+    return this.setItem(cacheKey, data);
+  },
+
+  /**
    * Get a cache key for a given class and key.
    *
    * @method getCacheKey
@@ -1859,6 +1912,25 @@ module.exports = Ember.Object.extend({
       Ember.run.scheduleOnce('afterRender', function() {
         var stringValue = JSON.stringify(value);
         localStorage.setItem(key, stringValue);
+        resolve(value);
+      });
+    });
+  },
+
+  /**
+   * Remove an item from the cache.
+   *
+   * @method removeItem
+   * @async
+   * @private
+   * @param {String} key the key to be removed from the cache
+   * @return {Ember.RSVP.Promise} a promise resolved when the key has been
+   *   removed
+   */
+  removeItem: function(key) {
+    return new Ember.RSVP.Promise(function(resolve) {
+      Ember.run.scheduleOnce('afterRender', function() {
+        localStorage.removeItem(key);
         resolve();
       });
     });
