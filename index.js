@@ -424,6 +424,7 @@ var RestModel = module.exports = Ember.Object.extend({
         url        : options.url,
         type       : method,
         data       : options.data,
+        headers    : options.headers || {},
         beforeSend : self.getBeforeSend(options),
         dataType   : 'json',
         contentType: 'application/json'

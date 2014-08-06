@@ -425,6 +425,7 @@ var RestModel = module.exports = Ember.Object.extend({
         url        : options.url,
         type       : method,
         data       : options.data,
+        headers    : options.headers || {},
         beforeSend : self.getBeforeSend(options),
         dataType   : 'json',
         contentType: 'application/json'
@@ -2043,13 +2044,14 @@ exports.update = function(klass, cacheKey, data) {
  */
 exports.updateClassStore = function(klass, data) {
   var allCachedModels = this.get(klass.toString()) || [];
+  var cachedItem;
 
   if ($.isArray(data)) {
     data.forEach(function(datum) {
-      addOnlyUnique(datum, klass, allCachedModels);
+      updateCachedModel(datum, klass, allCachedModels);
     });
   } else {
-    addOnlyUnique(data, klass, allCachedModels);
+    updateCachedModel(data, klass, allCachedModels);
   }
 
   this.set(klass.toString(), allCachedModels);
@@ -2057,8 +2059,13 @@ exports.updateClassStore = function(klass, data) {
   return allCachedModels;
 };
 
-function addOnlyUnique(item, klass, array) {
-  if (!utils.findMatching(item, klass, array)) {
+function updateCachedModel(item, klass, array) {
+  var cachedItem = utils.findMatching(item, klass, array);
+  var index      = array.indexOf(cachedItem);
+
+  if (cachedItem) {
+    array[index] = item;
+  } else {
     array.push(item);
   }
 }
