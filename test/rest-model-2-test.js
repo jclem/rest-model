@@ -676,9 +676,21 @@ describe('RestModel.V2', function() {
               }, 5);
             });
           });
+
+          it('updates the array with instances, not objects', function(done) {
+            return Post.request({
+              type: 'GET',
+              url : '/posts'
+            }).then(function(result) {
+              Ember.run.later(function() {
+                result.mapBy('constructor.typeKey').should.eql(['post', 'post']);
+                done();
+              }, 5);
+            });
+          });
         });
 
-        context('and the response is an object', function(done) {
+        context('and the response is an object', function() {
           var originalResponse;
 
           beforeEach(function() {

@@ -1597,12 +1597,13 @@ module.exports = Ember.Object.extend({
 
       if (cachedValue) {
         result = processingOptions.toResult(cachedValue);
-        this.ajaxAndUpdateCache(options, result);
+        this.ajaxAndUpdateCache(options, processingOptions, result);
         return result;
       } else {
-        return this.ajaxAndUpdateCache(options).then(function(response) {
-          return processingOptions.toResult(response);
-        });
+        return this.ajaxAndUpdateCache(options, processingOptions)
+          .then(function(response) {
+            return processingOptions.toResult(response);
+          });
       }
     }.bind(this)).then(function(response) {
       return response;
@@ -1623,10 +1624,12 @@ module.exports = Ember.Object.extend({
    * @return {Ember.RSVP.Promise} a promise resolved with the newly updated
    *   cached value
    */
-  ajaxAndUpdateCache: function(options, result) {
+  ajaxAndUpdateCache: function(options, processingOptions, result) {
     return this.ajax(options).then(function(response) {
       return cache.setResponse(this, options.url, response);
     }.bind(this)).then(function(response) {
+      response = processingOptions.toResult(response);
+
       if (result) {
         if (Ember.isArray(response)) {
           return this.updateCachedArray(result, response);
