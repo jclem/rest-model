@@ -24,6 +24,7 @@
     "latedef": "nofunc",
     "newcap": true,
     "noarg": true,
+    "node": true,
     "quotmark": "single",
     "strict": true,
     "trailing": true,
@@ -32,7 +33,6 @@
     "globals": {
       "$": false,
       "Ember": false,
-      "jQuery": false,
       "afterEach": false,
       "before": false,
       "beforeEach": false,
@@ -41,6 +41,7 @@
       "exports": false,
       "global": false,
       "it": false,
+      "jQuery": false,
       "localStorage": false,
       "module": false,
       "require": false
