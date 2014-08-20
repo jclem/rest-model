@@ -504,7 +504,13 @@ module.exports = Ember.Object.extend({
       type: 'GET'
     }, options);
 
-    return this.request(options);
+    return this.request(options).then(function(results) {
+      results.forEach(function(result) {
+        result.setProperties(parents);
+      });
+
+      return results;
+    });
   },
 
   /**
@@ -639,7 +645,11 @@ module.exports = Ember.Object.extend({
       type: 'GET'
     }, options);
 
-    return this.request(options).then(this.create.bind(this));
+    return this.request(options)
+      .then(this.create.bind(this)).then(function(model) {
+        model.setProperties(parents);
+        return model;
+      });
   },
 
   /**

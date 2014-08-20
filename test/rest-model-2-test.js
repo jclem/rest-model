@@ -491,6 +491,14 @@ describe('RestModel.V2', function() {
             jQuery.ajax.lastCall.args[0].url.should.eql('/posts/1/comments');
           });
         });
+
+        it('adds the parents to the results', function() {
+          this.resolve = [{ id: 1 }];
+
+          return Comment.all({ post: 5 }).then(function(comments) {
+            comments[0].get('post').should.eql(5);
+          });
+        });
       });
 
       context('when not given parents', function() {
@@ -549,6 +557,14 @@ describe('RestModel.V2', function() {
         it('uses the parents to build the path', function() {
           return Comment.find({ post: 1 }, 2).then(function() {
             jQuery.ajax.lastCall.args[0].url.should.eql('/posts/1/comments/2');
+          });
+        });
+
+        it('adds the parents to the result', function() {
+          this.resolve = [{ id: 1 }];
+
+          return Comment.find({ post: 5 }, 1).then(function(comment) {
+            comment.get('post').should.eql(5);
           });
         });
       });
