@@ -340,6 +340,17 @@ describe('RestModel.V2', function() {
       });
     });
 
+    it('is not dirty afterwards', function() {
+      this.resolve = { id: 1, name: 'Test Post' };
+
+      post.set('name', 'Test Post');
+      post.get('isDirty').should.eql(true);
+
+      return post.save().then(function() {
+        post.get('isDirty').should.eql(false);
+      });
+    });
+
     it('saves with a serialized form of the record', function() {
       post.set('name', 'bar');
 

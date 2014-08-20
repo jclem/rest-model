@@ -24,8 +24,8 @@ module.exports = Ember.Object.extend({
   init: function() {
     this.setOriginalProperties();
 
-    var dirtyProperties = Ember.computed.apply(Ember, this.get('attrs')
-      .concat(function() {
+    var dirtyProperties = Ember.computed.apply(Ember, this.get('attrNames')
+      .concat(['originalProperties']).concat(function() {
         var attrNames          = this.get('attrNames');
         var originalProperties = this.get('originalProperties');
 
@@ -336,7 +336,9 @@ module.exports = Ember.Object.extend({
       return this.constructor.ajax(options).then(function(data) {
         return this.persistToCache(data);
       }.bind(this)).then(function(data) {
-        return this.setProperties(data);
+        this.setProperties(data);
+        this.setOriginalProperties();
+        return this;
       }.bind(this));
     }.bind(this));
   },
