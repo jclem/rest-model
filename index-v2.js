@@ -337,7 +337,7 @@ module.exports = Ember.Object.extend({
         return this.persistToCache(data);
       }.bind(this)).then(function(data) {
         return this.setProperties(data);
-      }.bind(this))
+      }.bind(this));
     }.bind(this));
   },
 
