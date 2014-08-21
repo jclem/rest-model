@@ -106,6 +106,14 @@ module.exports = Ember.Object.extend({
   isNew: Ember.computed.none('primaryKey'),
 
   /**
+   * Whether or not the record has been persisted. The opposite of `isNew`.
+   *
+   * @property isPersisted
+   * @type {Boolean}
+   */
+  isPersisted: Ember.computed.not('isNew'),
+
+  /**
    * The names of the declared `attributes` without their observable modifiers
    * (e.g. will return `['tags']`, not `['tags.[]']`).
    *
@@ -155,7 +163,7 @@ module.exports = Ember.Object.extend({
    * @type {String}
    */
   path: function() {
-    var primaryKey = this.get('primaryKey');
+    var primaryKey = this.get('isPersisted') ? this.get('primaryKey') : null;
     var parents    = this.get('parents');
 
     return this.constructor.buildPath(parents, primaryKey);
