@@ -850,8 +850,11 @@ module.exports = Ember.Object.extend({
     result.removeObjects(removedRecords);
 
     updatedRecords.forEach(function(record) {
+      if (record.get('isDirty')) { return; }
       var newProperties = utils.findMatching(record, this, newArray);
+      newProperties = this.getUpdatableProperties(newProperties);
       record.setProperties(newProperties);
+      record.setOriginalProperties();
     }.bind(this));
 
     return result;
@@ -871,6 +874,29 @@ module.exports = Ember.Object.extend({
    *   cached object
    */
   updateCachedObject: function(result, newProperties) {
-    return result.setProperties(newProperties);
+    if (result.get('isDirty')) { return; }
+    newProperties = this.getUpdatableProperties(newProperties);
+    result.setProperties(newProperties);
+    result.setOriginalProperties();
+    return result;
+  },
+
+  /**
+   * A list of attributes that can be used to update a cached object after an
+   * AJAX call has been made. Meant to exclude special properties added by
+   * RestModel.
+   *
+   * @method getUpdatableProperties
+   * @static
+   * @private
+   * @param {RestModel} model the model to pull properties from
+   * @return {Array} an array of property names
+   */
+  getUpdatableProperties: function(model) {
+    var keys = Ember.keys(model).filter(function(key) {
+      return ['originalProperties', 'dirtyProperties'].indexOf(key) === -1;
+    });
+
+    return model.getProperties(keys);
   }
 });
