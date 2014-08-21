@@ -940,6 +940,14 @@ module.exports = Ember.Object.extend({
   isNew: Ember.computed.none('primaryKey'),
 
   /**
+   * Whether or not the record has been persisted. The opposite of `isNew`.
+   *
+   * @property isPersisted
+   * @type {Boolean}
+   */
+  isPersisted: Ember.computed.not('isNew'),
+
+  /**
    * The names of the declared `attributes` without their observable modifiers
    * (e.g. will return `['tags']`, not `['tags.[]']`).
    *
@@ -989,7 +997,7 @@ module.exports = Ember.Object.extend({
    * @type {String}
    */
   path: function() {
-    var primaryKey = this.get('primaryKey');
+    var primaryKey = this.get('isPersisted') ? this.get('primaryKey') : null;
     var parents    = this.get('parents');
 
     return this.constructor.buildPath(parents, primaryKey);
@@ -1676,8 +1684,11 @@ module.exports = Ember.Object.extend({
     result.removeObjects(removedRecords);
 
     updatedRecords.forEach(function(record) {
+      if (record.get('isDirty')) { return; }
       var newProperties = utils.findMatching(record, this, newArray);
+      newProperties = this.getUpdatableProperties(newProperties);
       record.setProperties(newProperties);
+      record.setOriginalProperties();
     }.bind(this));
 
     return result;
@@ -1697,7 +1708,30 @@ module.exports = Ember.Object.extend({
    *   cached object
    */
   updateCachedObject: function(result, newProperties) {
-    return result.setProperties(newProperties);
+    if (result.get('isDirty')) { return; }
+    newProperties = this.getUpdatableProperties(newProperties);
+    result.setProperties(newProperties);
+    result.setOriginalProperties();
+    return result;
+  },
+
+  /**
+   * A list of attributes that can be used to update a cached object after an
+   * AJAX call has been made. Meant to exclude special properties added by
+   * RestModel.
+   *
+   * @method getUpdatableProperties
+   * @static
+   * @private
+   * @param {RestModel} model the model to pull properties from
+   * @return {Array} an array of property names
+   */
+  getUpdatableProperties: function(model) {
+    var keys = Ember.keys(model).filter(function(key) {
+      return ['originalProperties', 'dirtyProperties'].indexOf(key) === -1;
+    });
+
+    return model.getProperties(keys);
   }
 });
 
@@ -1804,7 +1838,7 @@ module.exports = Ember.Object.extend({
 
       response.map(function(item) {
         var cacheKey = this.getCacheKey(klass.typeKey, item[primaryKey]);
-        return this.setItem(cacheKey, item);
+        return this.putItem(cacheKey, item);
       }.bind(this))
     ]).then(function() {
       return response;
@@ -1829,7 +1863,7 @@ module.exports = Ember.Object.extend({
     var cacheKey   = this.getCacheKey(klass.typeKey, key);
 
     return Ember.RSVP.all([
-      this.setItem(cacheKey, response),
+      this.putItem(cacheKey, response),
       this.setItem(path, key)
     ]).then(function() {
       return response;
@@ -1866,7 +1900,7 @@ module.exports = Ember.Object.extend({
     var primaryKey     = record.get(primaryKeyName) || data[primaryKeyName];
     var cacheKey       = this.getCacheKey(record.constructor.typeKey, primaryKey);
 
-    return this.setItem(cacheKey, data);
+    return this.putItem(cacheKey, data);
   },
 
   /**
@@ -1897,6 +1931,31 @@ module.exports = Ember.Object.extend({
       var value = localStorage.getItem(key) || null;
       resolve(JSON.parse(value));
     });
+  },
+
+  /**
+   * Update or set a JSON value in the cache.
+   *
+   * @method putItem
+   * @async
+   * @private
+   * @param {String} key the key to set the value for in the cache
+   * @param {Object,Array.String,Array.Object} value the value to put in the cache
+   * @return {Ember.RSVP.Promise} a promise resolved when the value has been set
+   *   in the cache
+   */
+  putItem: function(key, value) {
+    return this.getItem(key).then(function(existingValue) {
+      if (existingValue) {
+        for (var prop in value) {
+          existingValue[prop] = value[prop];
+        }
+
+        return this.setItem(key, existingValue);
+      } else {
+        return this.setItem(key, value);
+      }
+    }.bind(this));
   },
 
   /**
