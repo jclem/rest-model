@@ -1739,7 +1739,7 @@ module.exports = Ember.Object.extend({
 'use strict';
 
 /**
- * A set of functions responsible for managint RestModel's localStorage cache.
+ * A set of functions responsible for managing RestModel's localStorage cache.
  *
  * @class Cache
  */
