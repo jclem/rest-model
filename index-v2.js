@@ -514,11 +514,9 @@ module.exports = Ember.Object.extend({
       type: 'GET'
     }, options);
 
-    return this.request(options).then(function(results) {
-      results.forEach(function(result) {
-        result.setProperties(parents);
-      });
+    var processingOptions = { parents: parents };
 
+    return this.request(options, processingOptions).then(function(results) {
       return results;
     });
   },
@@ -701,19 +699,26 @@ module.exports = Ember.Object.extend({
    * Transform results from an API request into an instance or array of
    * instances of this class.
    *
+   * Accepts an object of parent properties to ensure that cached and new
+   * records always have a reference to their parent records.
+   *
    * @method toResult
    * @static
    * @private
    * @param {Array,Object} response an object or array of objects
+   * @param {Object} [parents={}] an object of parent properties to set on the
+   *   object or array of objects
    * @return {Array,RestModel} an instance or array of instances of this class
    */
-  toResult: function(response) {
+  toResult: function(response, parents) {
+    parents = parents || {};
+
     if (Ember.isArray(response)) {
       return response.map(function(item) {
-        return this.create(item);
+        return this.create(item).setProperties(parents);
       }.bind(this));
     } else {
-      return this.create(response);
+      return this.create(response).setProperties(parents);
     }
   },
 
@@ -752,7 +757,8 @@ module.exports = Ember.Object.extend({
       return this.requestWithCache(options, processingOptions);
     } else {
       return this.ajax(options).then(function(response) {
-        return processingOptions.toResult(response);
+        var parents = processingOptions.parents;
+        return processingOptions.toResult(response, parents);
       });
     }
   },
@@ -811,10 +817,12 @@ module.exports = Ember.Object.extend({
    *   cached value
    */
   ajaxAndUpdateCache: function(options, processingOptions, result) {
+    var parents = processingOptions.parents;
+
     return this.ajax(options).then(function(response) {
       return cache.setResponse(this, options.url, response);
     }.bind(this)).then(function(response) {
-      response = processingOptions.toResult(response);
+      response = processingOptions.toResult(response, parents);
 
       if (result) {
         if (Ember.isArray(response)) {
@@ -845,11 +853,6 @@ module.exports = Ember.Object.extend({
     var newRecords     = utils.findNotIn(newArray, result, this);
     var removedRecords = utils.findNotIn(result, newArray, this);
     var updatedRecords = utils.findIn(result, newArray, this);
-    var parents        = result.get('firstObject.parents');
-
-    newRecords.forEach(function(newRecord) {
-      newRecord.setProperties(parents);
-    });
 
     result.pushObjects(newRecords);
     result.removeObjects(removedRecords);
