@@ -48,15 +48,15 @@ beforeEach(function() {
   jQuery.ajax = sinon.stub().returns({
     then: function(resolve, reject) {
       if (self.resolve) {
-        Ember.run.later(function() {
+        setTimeout(function() {
           resolve(self.resolve);
           self.afterRequest();
-        });
+        }, 5);
       } else if (self.reject) {
-        Ember.run.later(function() {
+        setTimeout(function() {
           reject(self.reject);
           self.afterRequest();
-        });
+        }, 5);
       } else {
         resolve(null);
       }

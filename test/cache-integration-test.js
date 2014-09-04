@@ -18,6 +18,7 @@ describe('caching behavior', function() {
   describe('when caching an array of objects', function() {
     beforeEach(function(done) {
       this.resolve = [{ id: 1 }];
+
       Post.all().then(function() {
         done();
       });
@@ -34,7 +35,9 @@ describe('caching behavior', function() {
         });
       });
 
-      it('initially returns the cached records', function() {
+      it('initially returns the cached records', function(done) {
+        this.afterRequest = done;
+
         res.map(function(post) {
           return post.get('id');
         }).should.eql([1]);
@@ -62,7 +65,9 @@ describe('caching behavior', function() {
         });
       });
 
-      it('initially returns the cached records', function() {
+      it('initially returns the cached records', function(done) {
+        this.afterRequest = done;
+
         res.map(function(post) {
           return post.get('id');
         }).should.eql([1]);
@@ -87,7 +92,8 @@ describe('caching behavior', function() {
         });
       });
 
-      it('initially returns the cached records', function() {
+      it('initially returns the cached records', function(done) {
+        this.afterRequest = done;
         should(res[0].get('content')).eql(undefined);
       });
 
@@ -119,7 +125,8 @@ describe('caching behavior', function() {
         });
       });
 
-      it('initially returns the cached record', function() {
+      it('initially returns the cached record', function(done) {
+        this.afterRequest = done;
         should(res.get('content')).eql(undefined);
       });
 
