@@ -688,7 +688,7 @@ describe('RestModel.V2', function() {
               url : '/posts'
             }).then(function(result) {
               result.mapBy('name').should.eql(['name-1', 'name-2']);
-              Ember.run.later(done, 5);
+              setTimeout(done, 10);
             });
           });
 
@@ -697,10 +697,10 @@ describe('RestModel.V2', function() {
               type: 'GET',
               url : '/posts'
             }).then(function(result) {
-              Ember.run.later(function() {
+              setTimeout(function() {
                 result.mapBy('name').should.eql(['new-name-1', 'name-3']);
                 done();
-              }, 5);
+              }, 10);
             });
           });
 
@@ -709,10 +709,10 @@ describe('RestModel.V2', function() {
               type: 'GET',
               url : '/posts'
             }).then(function(result) {
-              Ember.run.later(function() {
+              setTimeout(function() {
                 result.mapBy('constructor.typeKey').should.eql(['post', 'post']);
                 done();
-              }, 5);
+              }, 10);
             });
           });
         });
@@ -738,7 +738,7 @@ describe('RestModel.V2', function() {
               url : '/posts/1'
             }).then(function(result) {
               result.get('name').should.eql(originalResponse.name);
-              Ember.run.later(done, 5);
+              setTimeout(done, 10);
             });
           });
 
@@ -747,10 +747,10 @@ describe('RestModel.V2', function() {
               type: 'GET',
               url : '/posts/1'
             }).then(function(result) {
-              Ember.run.later(function() {
+              setTimeout(function() {
                 result.get('name').should.eql('new-name');
                 done();
-              }, 5);
+              }, 10);
             });
           });
         });
