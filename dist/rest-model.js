@@ -1683,6 +1683,11 @@ module.exports = Ember.Object.extend({
     var newRecords     = utils.findNotIn(newArray, result, this);
     var removedRecords = utils.findNotIn(result, newArray, this);
     var updatedRecords = utils.findIn(result, newArray, this);
+    var parents        = result.get('firstObject.parents');
+
+    newRecords.forEach(function(newRecord) {
+      newRecord.setProperties(parents);
+    });
 
     result.pushObjects(newRecords);
     result.removeObjects(removedRecords);
