@@ -1,7 +1,7 @@
 {
   "name": "rest-model",
   "main": "dist/rest-model.js",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "authors": [
     "Jonathan Clem <jonathan@jclem.net>"
   ],
