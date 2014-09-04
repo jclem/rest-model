@@ -1,6 +1,6 @@
 # RestModel
 
-[![Build Status](https://travis-ci.org/jclem/rest-model.svg)](https://travis-ci.org/jclem/rest-model)
+[![Build Status](https://travis-ci.org/jclem/rest-model.svg?branch=master)](https://travis-ci.org/jclem/rest-model)
 
 RestModel is a library for interacting with a REST API in Ember. Its goal is to
 provide a library with predictable behavior and which can be easily extended to
