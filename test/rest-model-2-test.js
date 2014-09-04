@@ -510,6 +510,29 @@ describe('RestModel.V2', function() {
             comments[0].get('post').should.eql(5);
           });
         });
+
+        context('and the request is cached', function() {
+          var originalResponse;
+
+          beforeEach(function() {
+            originalResponse = [{ id: 1, name: 'name-1' }];
+            this.resolve = originalResponse;
+
+            return Comment.all({ post: 1 }).then(function() {
+              this.resolve =
+                [{ id: 1, name: 'name-1' }, { id: 2, name: 'name-2' }];
+            }.bind(this));
+          });
+
+          it('adds the parents to the previously cached records', function(done) {
+            return Comment.all({ post: 1 }).then(function(comments) {
+              setTimeout(function() {
+                comments.mapBy('parents.post').should.eql([1, 1]);
+                done();
+              }, 10);
+            });
+          });
+        });
       });
 
       context('when not given parents', function() {
