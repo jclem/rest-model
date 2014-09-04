@@ -1539,10 +1539,10 @@ module.exports = Ember.Object.extend({
    * @param {Array,Object} response an object or array of objects
    * @return {Array,RestModel} an instance or array of instances of this class
    */
-  toResult: function(response) {
+  toResult: function(response, parents) {
     if (Ember.isArray(response)) {
       return response.map(function(item) {
-        return this.create(item);
+        return this.create(item).setProperties(parents);
       }.bind(this));
     } else {
       return this.create(response);
@@ -1584,7 +1584,8 @@ module.exports = Ember.Object.extend({
       return this.requestWithCache(options, processingOptions);
     } else {
       return this.ajax(options).then(function(response) {
-        return processingOptions.toResult(response);
+        var parents = processingOptions.parents;
+        return processingOptions.toResult(response, parents);
       });
     }
   },
@@ -1642,6 +1643,7 @@ module.exports = Ember.Object.extend({
    * @return {Ember.RSVP.Promise} a promise resolved with the newly updated
    *   cached value
    */
+
   ajaxAndUpdateCache: function(options, processingOptions, result) {
     var parents = processingOptions.parents;
 
@@ -1655,7 +1657,6 @@ module.exports = Ember.Object.extend({
           response.forEach(function(result) {
             result.setProperties(parents);
           });
-
           return this.updateCachedArray(result, response);
         } else {
           return this.updateCachedObject(result, response);
