@@ -514,11 +514,9 @@ module.exports = Ember.Object.extend({
       type: 'GET'
     }, options);
 
-    return this.request(options).then(function(results) {
-      results.forEach(function(result) {
-        result.setProperties(parents);
-      });
+    var processingOptions = { parents: parents };
 
+    return this.request(options, processingOptions).then(function(results) {
       return results;
     });
   },
@@ -810,7 +808,10 @@ module.exports = Ember.Object.extend({
    * @return {Ember.RSVP.Promise} a promise resolved with the newly updated
    *   cached value
    */
+
   ajaxAndUpdateCache: function(options, processingOptions, result) {
+    var parents = processingOptions.parents;
+
     return this.ajax(options).then(function(response) {
       return cache.setResponse(this, options.url, response);
     }.bind(this)).then(function(response) {
@@ -818,6 +819,10 @@ module.exports = Ember.Object.extend({
 
       if (result) {
         if (Ember.isArray(response)) {
+          response.forEach(function(result) {
+            result.setProperties(parents);
+          });
+
           return this.updateCachedArray(result, response);
         } else {
           return this.updateCachedObject(result, response);
