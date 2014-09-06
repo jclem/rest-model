@@ -788,7 +788,7 @@ module.exports = Ember.Object.extend({
       cachedValue = _cachedValue;
 
       if (cachedValue) {
-        result = processingOptions.toResult(cachedValue);
+        result = processingOptions.toResult(cachedValue, processingOptions.parents);
         this.ajaxAndUpdateCache(options, processingOptions, result);
         return result;
       } else {
