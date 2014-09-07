@@ -35,7 +35,8 @@ describe('RestModel.V2', function() {
 
     Comment = RestModel.extend().reopenClass({
       typeKey: 'comment',
-      base   : 'posts/:post/comments'
+      base   : 'posts/:post/comments',
+      cache  : true
     });
   });
 
@@ -525,6 +526,13 @@ describe('RestModel.V2', function() {
           });
 
           it('adds the parents to the previously cached records', function(done) {
+            Comment.all({ post: 1 }).then(function(comments) {
+              comments.mapBy('parents.post').should.eql([1]);
+              this.afterRequest = done;
+            }.bind(this));
+          });
+
+          it('adds the parents to any new records', function(done) {
             return Comment.all({ post: 1 }).then(function(comments) {
               setTimeout(function() {
                 comments.mapBy('parents.post').should.eql([1, 1]);
