@@ -18,7 +18,12 @@ gulp.task('default', function() {
 });
 
 gulp.task('watch', function() {
-  watch({ glob: ['lib/**/*.js', 'test/**/*.js'] }, function() {
+  watch({ glob: [
+    'lib/**/*.js',
+    'index.js',
+    'index-v2.js',
+    'test/**/*.js'
+  ] }, function() {
     var test = spawn('npm', ['test']);
     test.stdout.on('data', process.stdout.write.bind(process.stdout));
     test.stderr.on('data', process.stderr.write.bind(process.stderr));
