@@ -449,6 +449,17 @@ module.exports = Ember.Object.extend({
   cache: false,
 
   /**
+   * An array of filters that will be called on each array returned by this
+   * class.
+   *
+   * @property filters
+   * @static
+   * @type Array<Function>
+   * @default []
+   */
+  filters: [],
+
+  /**
    * Perform an AJAX request.
    *
    * @method ajax
@@ -719,7 +730,9 @@ module.exports = Ember.Object.extend({
         return this.create(item).setProperties(parents);
       }.bind(this));
 
-      return MutatingArray.apply(content);
+      return MutatingArray.apply(content)
+        .set('filters', this.filters)
+        .runFilters();
     } else {
       return this.create(response).setProperties(parents);
     }
