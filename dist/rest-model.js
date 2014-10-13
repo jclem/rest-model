@@ -1459,8 +1459,7 @@ module.exports = Ember.Object.extend({
    * @return {Array} an array of (optionally) transformed objects
    */
   deserializeArray: function(data) {
-    data = data.map(this.deserialize.bind(this));
-    return MutatingArray.create({ content: data });
+    return data.map(this.deserialize.bind(this));
   },
 
   /**
@@ -1550,9 +1549,11 @@ module.exports = Ember.Object.extend({
     parents = parents || {};
 
     if (Ember.isArray(response)) {
-      return response.map(function(item) {
+      var content = response.map(function(item) {
         return this.create(item).setProperties(parents);
       }.bind(this));
+
+      return MutatingArray.apply(content);
     } else {
       return this.create(response).setProperties(parents);
     }
@@ -2156,9 +2157,7 @@ function updateCachedModel(item, klass, array) {
 },{"./utils":6}],5:[function(_dereq_,module,exports){
 'use strict';
 
-module.exports = Ember.ArrayProxy.extend(
-  Ember.MutableArray, {
-
+module.exports = Ember.Mixin.create({
   filters: function() {
     return [];
   }.property(),
@@ -2166,11 +2165,12 @@ module.exports = Ember.ArrayProxy.extend(
   addFilter: function(filter) {
     this.get('filters').pushObject(filter);
     var filtered = this.filter(filter);
-    this.set('content', filtered);
+    var args = [0, this.length].concat(filtered);
+    this.splice.apply(this, args);
     return this;
   },
 
-  replaceContent: function(idx, amt, objects) {
+  replace: function(idx, amt, objects) {
     var filters = this.get('filters');
 
     filters.forEach(function applyFilter(filter) {

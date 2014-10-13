@@ -625,8 +625,7 @@ module.exports = Ember.Object.extend({
    * @return {Array} an array of (optionally) transformed objects
    */
   deserializeArray: function(data) {
-    data = data.map(this.deserialize.bind(this));
-    return MutatingArray.create({ content: data });
+    return data.map(this.deserialize.bind(this));
   },
 
   /**
@@ -716,9 +715,11 @@ module.exports = Ember.Object.extend({
     parents = parents || {};
 
     if (Ember.isArray(response)) {
-      return response.map(function(item) {
+      var content = response.map(function(item) {
         return this.create(item).setProperties(parents);
       }.bind(this));
+
+      return MutatingArray.apply(content);
     } else {
       return this.create(response).setProperties(parents);
     }

@@ -7,7 +7,7 @@ describe('MutatingArray', function() {
     var arr, ret;
 
     beforeEach(function() {
-      arr = require('../lib/mutating-array').create({ content: [1,2,3] });
+      arr = require('../lib/mutating-array').apply([1,2,3]);
       arr._id = 'same-array';
 
       ret = arr.addFilter(function(item) {
