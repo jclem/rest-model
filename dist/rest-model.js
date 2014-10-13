@@ -831,11 +831,12 @@ var RestModel = module.exports = Ember.Object.extend({
 
 RestModel.V2 = _dereq_('./index-v2');
 
-},{"./index-v2":2,"./lib/cache":4,"./lib/utils":5}],2:[function(_dereq_,module,exports){
+},{"./index-v2":2,"./lib/cache":4,"./lib/utils":6}],2:[function(_dereq_,module,exports){
 'use strict';
 
-var cache = _dereq_('./lib/cache-v2').create();
-var utils = _dereq_('./lib/utils');
+var MutatingArray = _dereq_('./lib/mutating-array');
+var cache         = _dereq_('./lib/cache-v2').create();
+var utils         = _dereq_('./lib/utils');
 
 /**
  * Provides a suite of functionality around interacting with a resource on the
@@ -1458,7 +1459,8 @@ module.exports = Ember.Object.extend({
    * @return {Array} an array of (optionally) transformed objects
    */
   deserializeArray: function(data) {
-    return data.map(this.deserialize.bind(this));
+    data = data.map(this.deserialize.bind(this));
+    return MutatingArray.create({ content: data });
   },
 
   /**
@@ -1743,7 +1745,7 @@ module.exports = Ember.Object.extend({
   }
 });
 
-},{"./lib/cache-v2":3,"./lib/utils":5}],3:[function(_dereq_,module,exports){
+},{"./lib/cache-v2":3,"./lib/mutating-array":5,"./lib/utils":6}],3:[function(_dereq_,module,exports){
 'use strict';
 
 /**
@@ -2151,7 +2153,35 @@ function updateCachedModel(item, klass, array) {
   }
 }
 
-},{"./utils":5}],5:[function(_dereq_,module,exports){
+},{"./utils":6}],5:[function(_dereq_,module,exports){
+'use strict';
+
+module.exports = Ember.ArrayProxy.extend(
+  Ember.MutableArray, {
+
+  filters: function() {
+    return [];
+  }.property(),
+
+  addFilter: function(filter) {
+    this.get('filters').pushObject(filter);
+    var filtered = this.filter(filter);
+    this.set('content', filtered);
+    return this;
+  },
+
+  replaceContent: function(idx, amt, objects) {
+    var filters = this.get('filters');
+
+    filters.forEach(function applyFilter(filter) {
+      objects = objects.filter(filter);
+    });
+
+    return this._super(idx, amt, objects);
+  }
+});
+
+},{}],6:[function(_dereq_,module,exports){
 'use strict';
 
 exports.arraysEqual = function(array1, array2) {
