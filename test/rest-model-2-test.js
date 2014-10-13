@@ -460,7 +460,7 @@ describe('RestModel.V2', function() {
         this.resolve = [{ foo: 'bar' }];
 
         return Model.ajax().then(function(data) {
-          data.should.eql([{ foo: 'transformed' }]);
+          data.toArray().should.eql([{ foo: 'transformed' }]);
         });
       });
     });

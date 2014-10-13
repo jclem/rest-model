@@ -477,7 +477,6 @@ module.exports = Ember.Object.extend({
     return new Ember.RSVP.Promise(function(resolve, reject) {
       Ember.$.ajax(ajaxOptions).then(function(data) {
         if (Ember.isArray(data)) {
-          data = MutatingArray.create({ content: data });
           data = this.deserializeArray(data);
         } else {
           data = this.deserialize(data);
@@ -626,7 +625,8 @@ module.exports = Ember.Object.extend({
    * @return {Array} an array of (optionally) transformed objects
    */
   deserializeArray: function(data) {
-    return data.map(this.deserialize.bind(this));
+    data = data.map(this.deserialize.bind(this));
+    return MutatingArray.create({ content: data });
   },
 
   /**
