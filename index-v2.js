@@ -1,7 +1,8 @@
 'use strict';
 
-var cache = require('./lib/cache-v2').create();
-var utils = require('./lib/utils');
+var MutatingArray = require('./lib/mutating-array');
+var cache         = require('./lib/cache-v2').create();
+var utils         = require('./lib/utils');
 
 /**
  * Provides a suite of functionality around interacting with a resource on the
@@ -476,6 +477,7 @@ module.exports = Ember.Object.extend({
     return new Ember.RSVP.Promise(function(resolve, reject) {
       Ember.$.ajax(ajaxOptions).then(function(data) {
         if (Ember.isArray(data)) {
+          data = MutatingArray.create({ content: data });
           data = this.deserializeArray(data);
         } else {
           data = this.deserialize(data);
