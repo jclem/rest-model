@@ -1,8 +1,7 @@
 'use strict';
 
-var MutatingArray = require('./lib/mutating-array');
-var cache         = require('./lib/cache-v2').create();
-var utils         = require('./lib/utils');
+var cache = require('./lib/cache-v2').create();
+var utils = require('./lib/utils');
 
 /**
  * Provides a suite of functionality around interacting with a resource on the
@@ -730,9 +729,7 @@ module.exports = Ember.Object.extend({
         return this.create(item).setProperties(parents);
       }.bind(this));
 
-      return MutatingArray.apply(content)
-        .set('filters', this.filters)
-        .runFilters();
+      return Ember.MutatingArray.apply(content).set('filters', this.filters);
     } else {
       return this.create(response).setProperties(parents);
     }

@@ -13,6 +13,9 @@ before(function(done) {
     global.$            = jQuery;
     global.Handlebars   = benv.require('../bower_components/handlebars/handlebars.min.js', 'Handlebars');
     global.Ember        = benv.require('../bower_components/ember/ember.js', 'Ember');
+
+    benv.require('../bower_components/mutating-array/index.js');
+
     global.localStorage = {
       _cache: {},
 

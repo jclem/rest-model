@@ -831,12 +831,11 @@ var RestModel = module.exports = Ember.Object.extend({
 
 RestModel.V2 = _dereq_('./index-v2');
 
-},{"./index-v2":2,"./lib/cache":4,"./lib/utils":6}],2:[function(_dereq_,module,exports){
+},{"./index-v2":2,"./lib/cache":4,"./lib/utils":5}],2:[function(_dereq_,module,exports){
 'use strict';
 
-var MutatingArray = _dereq_('./lib/mutating-array');
-var cache         = _dereq_('./lib/cache-v2').create();
-var utils         = _dereq_('./lib/utils');
+var cache = _dereq_('./lib/cache-v2').create();
+var utils = _dereq_('./lib/utils');
 
 /**
  * Provides a suite of functionality around interacting with a resource on the
@@ -1564,9 +1563,7 @@ module.exports = Ember.Object.extend({
         return this.create(item).setProperties(parents);
       }.bind(this));
 
-      return MutatingArray.apply(content)
-        .set('filters', this.filters)
-        .runFilters();
+      return Ember.MutatingArray.apply(content).set('filters', this.filters);
     } else {
       return this.create(response).setProperties(parents);
     }
@@ -1759,7 +1756,7 @@ module.exports = Ember.Object.extend({
   }
 });
 
-},{"./lib/cache-v2":3,"./lib/mutating-array":5,"./lib/utils":6}],3:[function(_dereq_,module,exports){
+},{"./lib/cache-v2":3,"./lib/utils":5}],3:[function(_dereq_,module,exports){
 'use strict';
 
 /**
@@ -2167,30 +2164,7 @@ function updateCachedModel(item, klass, array) {
   }
 }
 
-},{"./utils":6}],5:[function(_dereq_,module,exports){
-'use strict';
-
-module.exports = Ember.Mixin.create({
-  filters: function() {
-    return [];
-  }.property(),
-
-  replace: function(idx, amt, objects) {
-    var filters = this.get('filters');
-
-    filters.forEach(function applyFilter(filter) {
-      objects = objects.filter(filter);
-    });
-
-    return this._super(idx, amt, objects);
-  },
-
-  runFilters: function() {
-    return this.replace(0, this.length, this);
-  }.observes('filters.[]')
-});
-
-},{}],6:[function(_dereq_,module,exports){
+},{"./utils":5}],5:[function(_dereq_,module,exports){
 'use strict';
 
 exports.arraysEqual = function(array1, array2) {

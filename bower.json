@@ -19,6 +19,7 @@
     "test"
   ],
   "dependencies": {
-    "ember": "^1.5.0"
+    "ember": "^1.5.0",
+    "mutating-array": "~1.0.0"
   }
 }
