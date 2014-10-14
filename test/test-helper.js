@@ -1,5 +1,7 @@
 'use strict';
 
+require('should');
+
 var benv  = require('benv');
 var sinon = require('sinon');
 
@@ -10,7 +12,7 @@ before(function(done) {
     global.jQuery       = require('../bower_components/jquery/dist/jquery.min.js');
     global.$            = jQuery;
     global.Handlebars   = benv.require('../bower_components/handlebars/handlebars.min.js', 'Handlebars');
-    global.Ember        = benv.require('../bower_components/ember/ember.min.js', 'Ember');
+    global.Ember        = benv.require('../bower_components/ember/ember.js', 'Ember');
     global.localStorage = {
       _cache: {},
 

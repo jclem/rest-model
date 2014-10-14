@@ -1,7 +1,8 @@
 'use strict';
 
-var cache = require('./lib/cache-v2').create();
-var utils = require('./lib/utils');
+var MutatingArray = require('./lib/mutating-array');
+var cache         = require('./lib/cache-v2').create();
+var utils         = require('./lib/utils');
 
 /**
  * Provides a suite of functionality around interacting with a resource on the
@@ -448,6 +449,17 @@ module.exports = Ember.Object.extend({
   cache: false,
 
   /**
+   * An array of filters that will be called on each array returned by this
+   * class.
+   *
+   * @property filters
+   * @static
+   * @type Array<Function>
+   * @default []
+   */
+  filters: [],
+
+  /**
    * Perform an AJAX request.
    *
    * @method ajax
@@ -714,9 +726,13 @@ module.exports = Ember.Object.extend({
     parents = parents || {};
 
     if (Ember.isArray(response)) {
-      return response.map(function(item) {
+      var content = response.map(function(item) {
         return this.create(item).setProperties(parents);
       }.bind(this));
+
+      return MutatingArray.apply(content)
+        .set('filters', this.filters)
+        .runFilters();
     } else {
       return this.create(response).setProperties(parents);
     }
