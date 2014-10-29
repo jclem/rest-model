@@ -212,10 +212,29 @@ describe('RestModel.V2', function() {
   });
 
   describe('#fetch', function() {
+    beforeEach(function() {
+      this.resolve = {};
+    });
 
+    it('is cached', function(done) {
+      this.resolve = { id: 1, email: 'first-email@example.com' };
 
+      post.set('id', 1);
 
+      return post.fetch().then(function() {
+        post = Post.create({ id: 1 });
+
+        this.resolve = { id: 1, email: 'new-email@example.com' };
+
+        post.fetch().then(function() {
+          post.get('email').should.eql('first-email@example.com');
         });
+
+        setTimeout(function() {
+          post.get('email').should.eql('new-email@example.com');
+          done();
+        }, 10);
+      }.bind(this));
     });
 
     context('when there is a primary key', function() {
@@ -223,8 +242,9 @@ describe('RestModel.V2', function() {
 
       beforeEach(function() {
         post.set('id', 1);
-        post.fetch();
-        args = jQuery.ajax.lastCall.args;
+        return post.fetch().then(function() {
+          args = jQuery.ajax.lastCall.args;
+        });
       });
 
       it('temporarily sets the isFetching and inFlight properties', function(done) {
@@ -249,8 +269,9 @@ describe('RestModel.V2', function() {
       });
 
       it('accepts custom options', function() {
-        post.fetch({ url: '/posts/custom-path' });
-        jQuery.ajax.lastCall.args[0].url.should.eql('/posts/custom-path');
+        return post.fetch({ url: '/posts/custom-path' }).then(function() {
+          jQuery.ajax.lastCall.args[0].url.should.eql('/posts/custom-path');
+        });
       });
 
       it('updates the record attributes with the response', function() {

@@ -242,7 +242,7 @@ module.exports = Ember.Object.extend({
         type: 'GET'
       }, options);
 
-      return this.constructor.ajax(options).then(function(data) {
+      return this.constructor.request(options, {}, this).then(function(data) {
         this.setProperties(data);
         return this;
       }.bind(this));
@@ -738,6 +738,8 @@ module.exports = Ember.Object.extend({
    * @param {Object} options options to pass on to the AJAX request
    * @param {Object} [processingOptions] options that control how the
    *   deserialized response is processed
+   * @param {RestModel.V2} updateModel a model to be updated after a later API
+   *   request instead of the original model returned
    * @param {Function} [processingOptions.toResult=RestModel.toResult] a
    *   function used to convert the response body into an instance or array of
    *   instances of RestModel
@@ -752,7 +754,7 @@ module.exports = Ember.Object.extend({
    * });
    * ```
    */
-  request: function(options, processingOptions) {
+  request: function(options, processingOptions, updateModel) {
     var readFromCache = this.cache && options.type.toLowerCase() === 'get';
 
     processingOptions = utils.extend({
@@ -760,7 +762,7 @@ module.exports = Ember.Object.extend({
     }, processingOptions);
 
     if (readFromCache) {
-      return this.requestWithCache(options, processingOptions);
+      return this.requestWithCache(options, processingOptions, updateModel);
     } else {
       return this.ajax(options).then(function(response) {
         var parents = processingOptions.parents;
@@ -782,10 +784,12 @@ module.exports = Ember.Object.extend({
    * @param {Object} options options to pass on to the AJAX request
    * @param {Object} [processingOptions] options that control how the
    *   deserialized response is processed
+   * @param {RestModel.V2} updateModel a model to be updated after a later API
+   *   request instead of the original model returned
    * @return {Ember.RSVP.Promise} a promise resolved with an object or array of
    *   objects from the cache or AJAX request
    */
-  requestWithCache: function(options, processingOptions) {
+  requestWithCache: function(options, processingOptions, updateModel) {
     var cachedValue;
 
     return cache.getResponse(this, options.url).then(function(_cachedValue) {
@@ -795,7 +799,7 @@ module.exports = Ember.Object.extend({
 
       if (cachedValue) {
         result = processingOptions.toResult(cachedValue, processingOptions.parents);
-        this.ajaxAndUpdateCache(options, processingOptions, result);
+        this.ajaxAndUpdateCache(options, processingOptions, updateModel || result);
         return result;
       } else {
         return this.ajaxAndUpdateCache(options, processingOptions)
