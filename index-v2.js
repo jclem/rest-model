@@ -197,8 +197,7 @@ module.exports = Ember.Object.extend({
   }.property().volatile(),
 
   /**
-   * Delete this instance. Will throw an error if there is no `primaryKey` for
-   * this instance.
+   * Delete this instance.
    *
    * @method delete
    * @async
@@ -211,10 +210,6 @@ module.exports = Ember.Object.extend({
    * ```
    */
   delete: function(options) {
-    if (this.constructor.primaryKeys.length && Ember.isNone(this.get('primaryKey'))) {
-      throw new Error('Can not delete a record with no primary key.');
-    }
-
     return this.request('deleting', function() {
       options = utils.extend({
         url : this.get('path'),
@@ -228,8 +223,7 @@ module.exports = Ember.Object.extend({
   },
 
   /**
-   * Fetch this instance. Will throw an error if there is no `primaryKey` for
-   * this instance.
+   * Fetch this instance.
    *
    * @method fetch
    * @async
@@ -242,10 +236,6 @@ module.exports = Ember.Object.extend({
    * ```
    */
   fetch: function(options) {
-    if (this.constructor.primaryKeys.length && Ember.isNone(this.get('primaryKey'))) {
-      throw new Error('Can not fetch a record with no primary key.');
-    }
-
     return this.request('fetching', function() {
       options = utils.extend({
         url : this.get('path'),
