@@ -211,7 +211,7 @@ module.exports = Ember.Object.extend({
    * ```
    */
   delete: function(options) {
-    if (Ember.isNone(this.get('primaryKey'))) {
+    if (this.constructor.primaryKeys.length && Ember.isNone(this.get('primaryKey'))) {
       throw new Error('Can not delete a record with no primary key.');
     }
 
@@ -242,7 +242,7 @@ module.exports = Ember.Object.extend({
    * ```
    */
   fetch: function(options) {
-    if (Ember.isNone(this.get('primaryKey'))) {
+    if (this.constructor.primaryKeys.length && Ember.isNone(this.get('primaryKey'))) {
       throw new Error('Can not fetch a record with no primary key.');
     }
 

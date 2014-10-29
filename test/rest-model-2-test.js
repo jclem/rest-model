@@ -137,6 +137,12 @@ describe('RestModel.V2', function() {
       });
     });
 
+    context('when there is no primary key', function() {
+      it('is the base class path', function() {
+        post.get('path').should.eql('/posts');
+      });
+    });
+
     context('when the record has parents', function() {
       it('includes the parents in the path', function() {
         var comment = Comment.create({ post: post, id: 2 });
@@ -158,10 +164,30 @@ describe('RestModel.V2', function() {
 
   describe('#delete', function() {
     context('when there is no primary key', function() {
-      it('throws an error', function() {
-        (function() {
-          post.delete();
-        }).should.throw('Can not delete a record with no primary key.');
+      context('and the model allows no primary key', function() {
+        beforeEach(function() {
+          Post._primaryKeys = Post.primaryKeys;
+          Post.primaryKeys = [];
+        });
+
+        afterEach(function() {
+          Post.primaryKeys = Post._primaryKeys;
+          delete Post._primaryKeys;
+        });
+
+        it('does not throw an error', function() {
+          (function() {
+            post.delete();
+          }).should.not.throw();
+        });
+      });
+
+      context('and the model does not allow a missing primary key', function() {
+        it('throws an error', function() {
+          (function() {
+            post.delete();
+          }).should.throw('Can not delete a record with no primary key.');
+        });
       });
     });
 
@@ -215,10 +241,30 @@ describe('RestModel.V2', function() {
 
   describe('#fetch', function() {
     context('when there is no primary key', function() {
-      it('throws an error', function() {
-        (function() {
-          post.fetch();
-        }).should.throw('Can not fetch a record with no primary key.');
+      context('and the model allows no primary key', function() {
+        beforeEach(function() {
+          Post._primaryKeys = Post.primaryKeys;
+          Post.primaryKeys = [];
+        });
+
+        afterEach(function() {
+          Post.primaryKeys = Post._primaryKeys;
+          delete Post._primaryKeys;
+        });
+
+        it('does not throw an error', function() {
+          (function() {
+            post.fetch();
+          }).should.not.throw();
+        });
+      });
+
+      context('and the model does not allow a missing primary key', function() {
+        it('throws an error', function() {
+          (function() {
+            post.fetch();
+          }).should.throw('Can not fetch a record with no primary key.');
+        });
       });
     });
 

@@ -1045,7 +1045,7 @@ module.exports = Ember.Object.extend({
    * ```
    */
   delete: function(options) {
-    if (Ember.isNone(this.get('primaryKey'))) {
+    if (this.constructor.primaryKeys.length && Ember.isNone(this.get('primaryKey'))) {
       throw new Error('Can not delete a record with no primary key.');
     }
 
@@ -1076,7 +1076,7 @@ module.exports = Ember.Object.extend({
    * ```
    */
   fetch: function(options) {
-    if (Ember.isNone(this.get('primaryKey'))) {
+    if (this.constructor.primaryKeys.length && Ember.isNone(this.get('primaryKey'))) {
       throw new Error('Can not fetch a record with no primary key.');
     }
 
@@ -1904,8 +1904,13 @@ module.exports = Ember.Object.extend({
    */
   removeRecord: function(record) {
     var typeKey    = record.constructor.typeKey;
-    var primaryKey = record.get(record.constructor.primaryKeys[0]);
-    var key        = this.getCacheKey(typeKey, primaryKey);
+    var key, primaryKey;
+
+    if (record.constructor.primaryKeys.length) {
+      primaryKey = record.get(record.constructor.primaryKeys[0]);
+    }
+
+    key = this.getCacheKey(typeKey, primaryKey);
 
     return this.removeItem(key);
   },
@@ -1972,7 +1977,9 @@ module.exports = Ember.Object.extend({
     return this.getItem(key).then(function(existingValue) {
       if (existingValue) {
         for (var prop in value) {
-          existingValue[prop] = value[prop];
+          if (value.hasOwnProperty(prop)) {
+            existingValue[prop] = value[prop];
+          }
         }
 
         return this.setItem(key, existingValue);
