@@ -352,6 +352,26 @@ describe('RestModel.V2', function() {
       this.resolve = { id: 1, name: 'Test Post' };
     });
 
+    context('when there is no primary key', function() {
+      beforeEach(function() {
+        Post._primaryKeys = Post.primaryKeys;
+        Post.primaryKeys = [];
+      });
+
+      afterEach(function() {
+        Post.primaryKeys = Post._primaryKeys;
+        delete Post._primaryKeys;
+      });
+
+      it('does not throw an error', function(done) {
+        (function() {
+          post.save().then(function() {
+            done();
+          });
+        }).should.not.throw();
+      });
+    });
+
     it('temporarily sets the isSaving and inFlight properties', function(done) {
       this.resolve = { id: 1 };
 
