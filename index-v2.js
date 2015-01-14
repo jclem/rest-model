@@ -17,7 +17,7 @@ module.exports = Ember.Object.extend({
   /**
    * Initialize a new instance of this class. Does so by first setting the
    * initial properties to the `originalProperties` value and by defining the
-   * `isDirty` property.
+   * `dirtyProperties` property.
    *
    * @method init
    * @private
@@ -35,35 +35,13 @@ module.exports = Ember.Object.extend({
      */
     this._definePrimaryKey();
 
-    var dirtyProperties = Ember.computed.apply(Ember, this.get('attrNames')
-      .concat(['originalProperties']).concat(function() {
-        var attrNames          = this.get('attrNames');
-        var originalProperties = this.get('originalProperties');
-
-        return attrNames.reduce(function(changedProperties, key) {
-          var value         = this.get(key);
-          var originalValue = originalProperties.get(key);
-
-          if (Ember.isArray(value)) {
-            if (!utils.arraysEqual(value, originalValue)) {
-              changedProperties.push(key);
-            }
-          } else if (!Ember.isEqual(value, originalValue)) {
-            changedProperties.push(key);
-          }
-
-          return changedProperties;
-        }.bind(this), []);
-      })
-    );
-
     /**
-     * A list of the dirty properties on this instance.
-     *
-     * @property dirtyProperties
-     * @type {Array}
-     */
-    Ember.defineProperty(this, 'dirtyProperties', dirtyProperties);
+      * A list of the dirty properties on this instance.
+      *
+      * @property dirtyProperties
+      * @type {Array}
+      */
+    this._defineDirtyProperties();
   },
 
   /**
@@ -340,6 +318,33 @@ module.exports = Ember.Object.extend({
   },
 
   /**
+   * Calculates dirty properties. Implements the logic behind the
+   * 'dirtyProperties' property.
+   *
+   * @method getDirtyProperties
+   * @private
+   */
+  getDirtyProperties: function() {
+    var attrNames          = this.get('attrNames');
+    var originalProperties = this.get('originalProperties');
+
+    return attrNames.reduce(function(changedProperties, key) {
+      var value         = this.get(key);
+      var originalValue = originalProperties.get(key);
+
+      if (Ember.isArray(value)) {
+        if (!utils.arraysEqual(value, originalValue)) {
+          changedProperties.push(key);
+        }
+      } else if (!Ember.isEqual(value, originalValue)) {
+        changedProperties.push(key);
+      }
+
+      return changedProperties;
+    }.bind(this), []);
+  },
+
+  /**
    * Serialize this object into JSON for sending in AJAX requests and for
    * persistent caching.
    *
@@ -390,6 +395,19 @@ module.exports = Ember.Object.extend({
     var primaryKey = Ember.computed.apply(Ember, args);
     Ember.defineProperty(this, 'primaryKey', primaryKey);
   },
+
+  /*
+   * Defines the property 'dirtyProperties'. Used during initialization.
+   *
+   * @method _defineDirtyProperties
+   * @private
+   */
+  _defineDirtyProperties: function() {
+    var args = this.get('attrNames')
+                   .concat('originalProperties', this.getDirtyProperties);
+    var dirtyProperties = Ember.computed.apply(Ember, args);
+    Ember.defineProperty(this, 'dirtyProperties', dirtyProperties);
+  }
 }).reopenClass({
   /**
    * The lowercase string version of the name of this class, used for caching
