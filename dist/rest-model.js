@@ -851,43 +851,31 @@ module.exports = Ember.Object.extend({
   /**
    * Initialize a new instance of this class. Does so by first setting the
    * initial properties to the `originalProperties` value and by defining the
-   * `isDirty` property.
+   * `dirtyProperties` property.
    *
    * @method init
    * @private
    */
   init: function() {
     this.setOriginalProperties();
-
-    var dirtyProperties = Ember.computed.apply(Ember, this.get('attrNames')
-      .concat(['originalProperties']).concat(function() {
-        var attrNames          = this.get('attrNames');
-        var originalProperties = this.get('originalProperties');
-
-        return attrNames.reduce(function(changedProperties, key) {
-          var value         = this.get(key);
-          var originalValue = originalProperties.get(key);
-
-          if (Ember.isArray(value)) {
-            if (!utils.arraysEqual(value, originalValue)) {
-              changedProperties.push(key);
-            }
-          } else if (!Ember.isEqual(value, originalValue)) {
-            changedProperties.push(key);
-          }
-
-          return changedProperties;
-        }.bind(this), []);
-      })
-    );
+    /**
+     * The value of this instance's primary key. Found by iterating over the
+     * class's `primaryKeys` property until this instance has a value for a
+     * primary key.
+     *
+     * @property primaryKey
+     * @private
+     * @type {String,Number}
+     */
+    this._definePrimaryKey();
 
     /**
-     * A list of the dirty properties on this instance.
-     *
-     * @property dirtyProperties
-     * @type {Array}
-     */
-    Ember.defineProperty(this, 'dirtyProperties', dirtyProperties);
+      * A list of the dirty properties on this instance.
+      *
+      * @property dirtyProperties
+      * @type {Array}
+      */
+    this._defineDirtyProperties();
   },
 
   /**
@@ -990,10 +978,6 @@ module.exports = Ember.Object.extend({
    * with the `primaryKey` of this instance. Will throw an error if a parent
    * necessary for building the path is lacking a primary key.
    *
-   * TODO: If `primaryKey` is not volatile, but properly observes the values in
-   *       the class's `primarykeys`, as well as `parents`, this does not have
-   *       to be volatile.
-   *
    * @property path
    * @type {String}
    */
@@ -1002,33 +986,8 @@ module.exports = Ember.Object.extend({
     var parents    = this.get('parents');
 
     return this.constructor.buildPath(parents, primaryKey);
-  }.property().volatile(),
+  }.property('primaryKey', 'parents'),
 
-  /**
-   * The value of this instance's primary key. Found by iterating over the
-   * class's `primaryKeys` property until this instance has a value for a
-   * primary key.
-   *
-   * TODO: This doesn't have to be volatile if it's created in `init` to observe
-   *       the values in the class's `primaryKeys`.
-   *
-   * @property primaryKey
-   * @private
-   * @type {String,Number}
-   */
-  primaryKey: function() {
-    var keyNames = this.constructor.primaryKeys;
-    var key, value;
-
-    for (var i = 0; i < keyNames.length; i++) {
-      key   = keyNames[i];
-      value = this.get(key);
-
-      if (!Ember.isNone(value)) {
-        return value;
-      }
-    }
-  }.property().volatile(),
 
   /**
    * Delete this instance.
@@ -1193,6 +1152,33 @@ module.exports = Ember.Object.extend({
   },
 
   /**
+   * Calculates dirty properties. Implements the logic behind the
+   * 'dirtyProperties' property.
+   *
+   * @method getDirtyProperties
+   * @private
+   */
+  getDirtyProperties: function() {
+    var attrNames          = this.get('attrNames');
+    var originalProperties = this.get('originalProperties');
+
+    return attrNames.reduce(function(changedProperties, key) {
+      var value         = this.get(key);
+      var originalValue = originalProperties.get(key);
+
+      if (Ember.isArray(value)) {
+        if (!utils.arraysEqual(value, originalValue)) {
+          changedProperties.push(key);
+        }
+      } else if (!Ember.isEqual(value, originalValue)) {
+        changedProperties.push(key);
+      }
+
+      return changedProperties;
+    }.bind(this), []);
+  },
+
+  /**
    * Serialize this object into JSON for sending in AJAX requests and for
    * persistent caching.
    *
@@ -1216,6 +1202,45 @@ module.exports = Ember.Object.extend({
       properties[key] = value;
       return properties;
     }.bind(this), {});
+  },
+
+  /**
+   * Defines the 'primaryKey' property during initialization, as it depends
+   * on the 'primaryKeys' constructor property.
+   *
+   * @method _definePrimaryKey
+   * @static
+   * @private
+   */
+  _definePrimaryKey: function() {
+    var args = this.constructor.primaryKeys.concat(function() {
+      var keyNames = this.constructor.primaryKeys;
+      var key, value;
+
+      for (var i = 0; i < keyNames.length; i++) {
+        key   = keyNames[i];
+        value = this.get(key);
+
+        if (!Ember.isNone(value)) {
+          return value;
+        }
+      }
+    });
+    var primaryKey = Ember.computed.apply(Ember, args);
+    Ember.defineProperty(this, 'primaryKey', primaryKey);
+  },
+
+  /*
+   * Defines the property 'dirtyProperties'. Used during initialization.
+   *
+   * @method _defineDirtyProperties
+   * @private
+   */
+  _defineDirtyProperties: function() {
+    var args = this.get('attrNames')
+                   .concat('originalProperties', this.getDirtyProperties);
+    var dirtyProperties = Ember.computed.apply(Ember, args);
+    Ember.defineProperty(this, 'dirtyProperties', dirtyProperties);
   }
 }).reopenClass({
   /**
