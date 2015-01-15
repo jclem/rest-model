@@ -64,6 +64,22 @@ describe('RestModel.V2', function() {
         post.get('dirtyProperties').should.eql(['tags']);
       });
     });
+
+    context('when getDirtyProperties is overridden', function() {
+      it('uses that functionality', function() {
+        post.reopen({
+          getDirtyProperties: function() {
+            var current  = this.get('name.foo.bar');
+            var original = this.get('originalPropeties.name.foo.bar');
+            console.log(current, original);
+            return current === original ? [] : ['name'];
+          }
+        });
+        post.get('dirtyProperties').should.eql([]);
+        post.set('name', { foo: { bar: 'baz' }});
+        post.get('dirtyProperties').should.eql(['name']);
+      });
+    });
   });
 
   describe('.isClean', function() {
