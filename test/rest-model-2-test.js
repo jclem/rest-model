@@ -116,6 +116,14 @@ describe('RestModel.V2', function() {
         post.get('isNew').should.be.false;
       });
     });
+
+    context('when the primary key changes', function() {
+      it('should not use previously cached value', function() {
+        post.get('isNew').should.be.true;
+        post.set('id', 2);
+        post.get('isNew').should.be.false;
+      });
+    });
   });
 
   describe('path', function() {
@@ -261,7 +269,7 @@ describe('RestModel.V2', function() {
 
 
       it('fetches the record with the instance path', function() {
-        args[0].url.should.eql(post.get('path'));
+        args[0].url.should.eql('/posts/1');
       });
 
       it('fetches the record with the a GET', function() {
