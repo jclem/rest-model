@@ -304,6 +304,12 @@ describe('RestModel.V2', function() {
           post.get('name').should.eql('Test Post');
         });
       });
+
+      it('still knows how to build a path', function() {
+        return post.fetch().then(function() {
+          post.get('path').should.eql('/posts/1');
+        });
+      });
     });
   });
 
