@@ -379,17 +379,23 @@ module.exports = Ember.Object.extend({
    * @private
    */
   _definePrimaryKey: function() {
-    var args = this.constructor.primaryKeys.concat(function() {
+    var args = this.constructor.primaryKeys.concat(function(_, setValue) {
       var keyNames = this.constructor.primaryKeys;
-      var key, value;
+      if (setValue === undefined) {
+        var key, value;
+        for (var i = 0; i < keyNames.length; i++) {
+          key   = keyNames[i];
+          value = this.get(key);
 
-      for (var i = 0; i < keyNames.length; i++) {
-        key   = keyNames[i];
-        value = this.get(key);
-
-        if (!Ember.isNone(value)) {
-          return value;
+          if (!Ember.isNone(value)) {
+            return value;
+          }
         }
+      } else {
+        if (this.get('primaryKey') !== setValue) {
+          this.set(keyNames[0], setValue);
+        }
+        return setValue;
       }
     });
     var primaryKey = Ember.computed.apply(Ember, args);
