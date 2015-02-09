@@ -752,7 +752,7 @@ module.exports = Ember.Object.extend({
       }.bind(this));
 
       return MutatingArray.apply(content)
-        .set('filters', this.filters)
+        .set('filters', Ember.copy(this.filters))
         .runFilters();
     } else {
       return this.create(response).setProperties(parents);
