@@ -154,6 +154,7 @@ var RestModel = module.exports = Ember.Object.extend({
    * Fetch the current model
    *
    * @method fetch
+   * @param {Object} [options] options that will be passed to `ajax`
    * @async
    * @return {Ember.RSVP.Promise} a promise resolved with `this`, a
    *   {{#crossLink "RestModel"}}RestModel{{/crossLink}}
@@ -590,6 +591,7 @@ var RestModel = module.exports = Ember.Object.extend({
    * @static
    * @param {Array} parents the parents of this record
    * @param {Number,String} primaryKey the primary key to find
+   * @param {Object} [options] options that will be passed to `ajax`
    * @return {Ember.RSVP.Promise} a promise resolved with an instance of
    *   {{#crossLink}}RestModel{{/crossLink}}
    * @example
