@@ -84,7 +84,7 @@ describe('RestModel', function() {
 
     it('accepts withURL options', function() {
       var model = Post.create({ id: 1 });
-      model.fetch({ withURL: '/special-posts' });
+      model.fetch(null, { withURL: '/special-posts' });
       jQuery.ajax.args[0][0].url.should.eql('/special-posts/1');
     });
   });

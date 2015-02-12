@@ -158,11 +158,11 @@ var RestModel = module.exports = Ember.Object.extend({
    * @return {Ember.RSVP.Promise} a promise resolved with `this`, a
    *   {{#crossLink "RestModel"}}RestModel{{/crossLink}}
    */
-  fetch: function(findKey) {
+  fetch: function(findKey, opts) {
     var parentKeys = this.get('parentKeys');
     var key        = this.getPrimaryKey();
 
-    return this.constructor.find(parentKeys, key).then(function(record) {
+    return this.constructor.find(parentKeys, key, opts).then(function(record) {
       this.setProperties(record);
       return this;
     }.bind(this));
@@ -600,14 +600,14 @@ var RestModel = module.exports = Ember.Object.extend({
    *     var post = Post.create({ id: 1 });
    *     Comment.find(post, 2); // GETs /posts/1/comments/2
    */
-  find: function(parents, primaryKey) {
+  find: function(parents, primaryKey, opts) {
     if (typeof parents === 'number' || typeof parents === 'string') {
       primaryKey = parents;
       parents    = undefined;
     }
 
     var params = this.extractPrimaryKeys(parents);
-    var url    = this.buildURL(params, primaryKey);
+    var url    = this.buildURL(params, primaryKey, opts);
     return this.ajax({ url: url, parents: parents });
   },
 
