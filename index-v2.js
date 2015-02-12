@@ -409,7 +409,7 @@ module.exports = Ember.Object.extend({
    * @private
    */
   _defineDirtyProperties: function() {
-    var args = this.get('attrNames')
+    var args = this.get('attrs')
                    .concat('originalProperties', this.getDirtyProperties);
     var dirtyProperties = Ember.computed.apply(Ember, args);
     Ember.defineProperty(this, 'dirtyProperties', dirtyProperties);

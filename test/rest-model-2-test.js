@@ -62,6 +62,8 @@ describe('RestModel.V2', function() {
       it('includes that property', function() {
         post.get('tags').pushObject('draft');
         post.get('dirtyProperties').should.eql(['tags']);
+        post.get('tags').removeObject('draft');
+        post.get('dirtyProperties').should.eql([]);
       });
     });
 
