@@ -833,7 +833,7 @@ var RestModel = module.exports = Ember.Object.extend({
 
 RestModel.V2 = _dereq_('./index-v2');
 
-},{"./index-v2":2,"./lib/cache":4,"./lib/utils":6}],2:[function(_dereq_,module,exports){
+},{"./index-v2":2,"./lib/cache":5,"./lib/utils":7}],2:[function(_dereq_,module,exports){
 'use strict';
 
 var MutatingArray = _dereq_('./lib/mutating-array');
@@ -1786,8 +1786,34 @@ module.exports = Ember.Object.extend({
   }
 });
 
-},{"./lib/cache-v2":3,"./lib/mutating-array":5,"./lib/utils":6}],3:[function(_dereq_,module,exports){
+},{"./lib/cache-v2":4,"./lib/mutating-array":6,"./lib/utils":7}],3:[function(_dereq_,module,exports){
+function NullStorage() {
+  var noop = function(){};
+
+  this.getItem = noop;
+  this.setItem = noop;
+  this.removeItem = noop;
+  this.clear = noop;
+  this.key = noop;
+  this.length = 0;
+};
+
+module.exports.NullStorage = NullStorage;
+
+module.exports.get = function() {
+  try {
+    localStorage.setItem('_rest-model', true);
+    localStorage.removeItem('_rest-model', true);
+    return localStorage;
+  } catch (error) {
+    return new NullStorage();
+  }
+};
+
+},{}],4:[function(_dereq_,module,exports){
 'use strict';
+
+var cacheStorage = _dereq_('./cache-storage');
 
 /**
  * A set of functions responsible for managing RestModel's localStorage cache.
@@ -1814,6 +1840,11 @@ module.exports = Ember.Object.extend({
       }
     }.bind(this));
   },
+
+  /**
+   * A cache storage interface. It defaults to localStorage.
+   */
+  storage: cacheStorage.get(),
 
   /**
    * Fetch the cached attributes of the given array of keys.
@@ -1989,7 +2020,7 @@ module.exports = Ember.Object.extend({
    */
   getItem: function(key) {
     return new Ember.RSVP.Promise(function(resolve) {
-      var value = localStorage.getItem(key) || null;
+      var value = this.storage.getItem(key) || null;
 
       try {
         value = JSON.parse(value);
@@ -1998,7 +2029,7 @@ module.exports = Ember.Object.extend({
       }
 
       resolve(value);
-    });
+    }.bind(this));
   },
 
   /**
@@ -2049,9 +2080,9 @@ module.exports = Ember.Object.extend({
         stringValue = JSON.stringify(value);
       }
 
-      localStorage.setItem(key, stringValue);
+      this.storage.setItem(key, stringValue);
       resolve(value);
-    });
+    }.bind(this));
   },
 
   /**
@@ -2066,16 +2097,17 @@ module.exports = Ember.Object.extend({
    */
   removeItem: function(key) {
     return new Ember.RSVP.Promise(function(resolve) {
-      localStorage.removeItem(key);
+      this.storage.removeItem(key);
       resolve();
-    });
+    }.bind(this));
   }
 });
 
-},{}],4:[function(_dereq_,module,exports){
+},{"./cache-storage":3}],5:[function(_dereq_,module,exports){
 'use strict';
 
 var utils = _dereq_('./utils');
+var cacheStorage = _dereq_('./cache-storage');
 
 /**
  * A set of functions responsible for managing RestModel's localStorage cache.
@@ -2092,9 +2124,15 @@ var utils = _dereq_('./utils');
  * @return {Object,Array.String,Array.Object} a cached object or array
  */
 exports.get = function(key) {
-  var value = localStorage.getItem(key) || null;
+  var value = this.storage.getItem(key) || null;
   return JSON.parse(value);
 };
+
+/**
+ * Set the cache storage interface. It uses localStorage by default.
+ * @type {Object}
+ */
+exports.storage = cacheStorage.get();
 
 /**
  * Set a JSON value as a string in the cache.
@@ -2106,7 +2144,7 @@ exports.get = function(key) {
  */
 exports.set = function(key, value) {
   var stringValue = JSON.stringify(value);
-  return localStorage.setItem(key, stringValue);
+  return this.storage.setItem(key, stringValue);
 };
 
 /**
@@ -2220,7 +2258,7 @@ function updateCachedModel(item, klass, array) {
   }
 }
 
-},{"./utils":6}],5:[function(_dereq_,module,exports){
+},{"./cache-storage":3,"./utils":7}],6:[function(_dereq_,module,exports){
 'use strict';
 
 module.exports = Ember.Mixin.create({
@@ -2243,7 +2281,7 @@ module.exports = Ember.Mixin.create({
   }.observes('filters.[]')
 });
 
-},{}],6:[function(_dereq_,module,exports){
+},{}],7:[function(_dereq_,module,exports){
 'use strict';
 
 exports.arraysEqual = function(array1, array2) {
