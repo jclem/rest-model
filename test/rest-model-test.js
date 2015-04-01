@@ -87,6 +87,7 @@ describe('RestModel', function() {
       model.fetch(null, { withURL: '/special-posts' });
       jQuery.ajax.args[0][0].url.should.eql('/special-posts/1');
     });
+
   });
 
   describe('#isDirty', function() {
@@ -180,6 +181,12 @@ describe('RestModel', function() {
       it('uses the custom `assignErrors` function, if present', function() {
         post.get('errors').toArray().should.eql(['name is too short']);
       });
+    });
+
+    it('accepts headers as an option', function() {
+      var post = Post.create({ id: 12345 });
+      post.save({ headers: {foo: 'bar'} });
+      jQuery.ajax.args[0][0].headers.foo.should.eql('bar');
     });
 
     describe('when given a specific URL', function() {

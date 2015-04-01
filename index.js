@@ -694,7 +694,8 @@ var RestModel = module.exports = Ember.Object.extend({
     var params = this.extractPrimaryKeys(parents);
     var url    = this.buildURL(params, model.getPrimaryKey(), options);
     var data   = model.serialize('patch');
-    return this.ajax({ url: url, method: 'PATCH', data: data, rawResponse: true });
+    options = options || {};
+    return this.ajax({ url: url, method: 'PATCH', data: data, rawResponse: true, headers: options.headers });
   },
 
   /**
@@ -716,7 +717,8 @@ var RestModel = module.exports = Ember.Object.extend({
     var params = this.extractPrimaryKeys(parents);
     var url    = this.buildURL(params, null, options);
     var data   = model.serialize('post');
-    return this.ajax({ url: url, method: 'POST', data: data, rawResponse: true });
+    options = options || {};
+    return this.ajax({ url: url, method: 'POST', data: data, rawResponse: true, headers: options.headers });
   },
 
   /**
@@ -738,7 +740,8 @@ var RestModel = module.exports = Ember.Object.extend({
     var params = this.extractPrimaryKeys(parents);
     var url    = this.buildURL(params, null, options);
     var data   = model.serialize('put');
-    return this.ajax({ url: url, method: 'PUT', data: data, rawResponse: true });
+    options = options || {};
+    return this.ajax({ url: url, method: 'PUT', data: data, rawResponse: true, headers: options.headers });
   },
 
   /**
