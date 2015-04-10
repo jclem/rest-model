@@ -1041,7 +1041,10 @@ module.exports = Ember.Object.extend({
       }, options);
 
       return this.constructor.request(options, {}, this).then(function(data) {
-        this.setProperties(data);
+        var properties = this.constructor.getUpdatableProperties(data);
+        this.setProperties(properties);
+        //we assume that these must in fact be the original properties
+        this.setOriginalProperties();
         return this;
       }.bind(this));
     }.bind(this));
