@@ -242,6 +242,17 @@ describe('RestModel.V2', function() {
       this.resolve = {};
     });
 
+    it('does not break dirtyProperties', function(done) {
+      this.resolve = { id: 1, email: 'first-email@example.com' };
+      post.set('id', 1);
+
+      return post.fetch().then(function() {
+        post.get('dirtyProperties').should.be.an.Array;
+        post.get('dirtyProperties.length').should.equal(0);
+        done();
+      });
+    });
+
     it('is cached', function(done) {
       this.resolve = { id: 1, email: 'first-email@example.com' };
 
