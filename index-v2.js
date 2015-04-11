@@ -339,6 +339,10 @@ module.exports = Ember.Object.extend({
         if (!utils.arraysEqual(value, originalValue)) {
           changedProperties.push(key);
         }
+      } else if (Ember.$.isPlainObject(value)) {
+        if(!utils.objectsEqual(value, originalValue)) {
+          changedProperties.push(key);
+        }
       } else if (!Ember.isEqual(value, originalValue)) {
         changedProperties.push(key);
       }
