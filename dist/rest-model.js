@@ -1178,6 +1178,10 @@ module.exports = Ember.Object.extend({
         if (!utils.arraysEqual(value, originalValue)) {
           changedProperties.push(key);
         }
+      } else if (Ember.$.isPlainObject(value)) {
+        if(!utils.objectsEqual(value, originalValue)) {
+          changedProperties.push(key);
+        }
       } else if (!Ember.isEqual(value, originalValue)) {
         changedProperties.push(key);
       }
@@ -2307,6 +2311,24 @@ exports.arraysEqual = function(array1, array2) {
   }
 
   return true;
+};
+
+exports.objectsEqual = function(object1, object2) {
+  if (!(object1 && object2)) { return false; }
+
+  var object1Keys = Ember.keys(object1);
+  var object2Keys = Ember.keys(object2);
+
+  var haveSameKeys = this.arraysEqual(object1Keys, object2Keys);
+
+  if(haveSameKeys) {
+    var haveSameValues = object1Keys.every(function(key) {
+      return object1[key] === object2[key];
+    });
+    return haveSameValues;
+  } else {
+    return false;
+  }
 };
 
 exports.extend = function(target, source) {

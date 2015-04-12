@@ -25,6 +25,10 @@ describe('RestModel.V2', function() {
 
       tags: function() {
         return [];
+      }.property(),
+
+      object: function() {
+        return {foo: 'bar'};
       }.property()
     }).reopenClass({
       primaryKeys: ['id'],
@@ -48,6 +52,24 @@ describe('RestModel.V2', function() {
     context('when no attributes have changed', function() {
       it('is empty', function() {
         post.get('dirtyProperties').should.eql([]);
+      });
+    });
+
+    context('when a one-level complex object is virtually identical', function() {
+      var instance;
+      beforeEach(function() {
+        instance = RestModel.extend({
+          attrs: function() {
+            return ['object'];
+          }.property(),
+          object: function() {
+            return {foo: 'bar'};
+          }.property()
+        }).create();
+      });
+
+      it('should be empty', function() {
+        instance.get('dirtyProperties').should.eql([]);
       });
     });
 
