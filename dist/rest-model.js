@@ -823,7 +823,13 @@ var RestModel = module.exports = Ember.Object.extend({
         var cachedModel = utils.findMatching(newModel, self, cachedResponse);
 
         if (cachedModel) {
-          return cachedModel.setProperties(newModel);
+          // we only want to update properties that we actually track
+          var attrs = cachedModel.get('attrs');
+          var properties = attrs.reduce(function(properties, attr) {
+            properties[attr] = newModel.get(attr);
+            return properties;
+          }, {});
+          return cachedModel.setProperties(properties);
         } else {
           return cachedResponse.pushObject(newModel);
         }
@@ -2345,7 +2351,7 @@ exports.findMatching = function(toMatch, klass, data) {
   var primaryStorageKey = klass.primaryKeys[0];
 
   return data.find(function(datum) {
-    return Ember.get(toMatch, primaryStorageKey) === Ember.get(datum, primaryStorageKey);
+    return toMatch[primaryStorageKey] === datum[primaryStorageKey];
   });
 };
 
